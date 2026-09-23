@@ -239,7 +239,15 @@ h1 small{display:block;font-size:9px;font-weight:900;letter-spacing:3.2px;color:
 .room-foot .go{flex:1;max-width:420px;margin-left:auto;width:auto;min-width:0}
 .room-foot .go:disabled{filter:grayscale(.7);opacity:.75;cursor:default}
 .room-foot .go.ready{background:linear-gradient(#a4f5b8,#46c86a);border-color:#d8ffe2;color:#0c4a1d;box-shadow:0 5px 0 #2a8d45}
-@media(max-width:760px){.room-grid{grid-template-columns:1fr}.room-slots{grid-template-columns:repeat(2,minmax(0,1fr))}.room-code-box b{font-size:24px}.rslot{min-height:0}.room-top h2{font-size:22px}}
+.room-chat{display:flex;flex-direction:column;gap:8px}
+.chat-log{height:170px;overflow-y:auto;padding:8px 10px;border-radius:12px;background:#eef6fc;border:1px solid #cfe4f3;font-size:13px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
+.chat-log p{margin:0 0 3px}
+.chat-log b{color:#0b5c98;margin-right:5px}
+.chat-log .me b{color:#b8720a}
+.chat-log .sys{color:#7b93a6;font-size:12px}
+.chat-row{display:flex;gap:6px}
+.chat-row input{flex:1;min-width:0;min-height:40px;border-radius:10px;border:2px solid #b9d5ea;padding:4px 10px;font:600 14px system-ui;color:#1f4a68;background:#fff}
+@media(max-width:760px){.chat-log{height:140px}.room-grid{grid-template-columns:1fr}.room-slots{grid-template-columns:repeat(2,minmax(0,1fr))}.room-code-box b{font-size:24px}.rslot{min-height:0}.room-top h2{font-size:22px}}
 </style>
 </head>
 <body>
@@ -329,6 +337,7 @@ h1 small{display:block;font-size:9px;font-weight:900;letter-spacing:3.2px;color:
      <p class="rlabel">판수</p><div class="rseg" id="roomRounds"><button data-v="1">단판</button><button data-v="3">3판</button><button data-v="5">5판</button></div>
      <p class="rlabel">라운드 시간</p><div class="rseg" id="roomTime"><button data-v="timed">3분 30초 · 맵 축소</button><button data-v="unlimited">제한 없음</button></div>
     </section>
+    <section class="rpanel room-chat"><h3>채팅 <small>대기실에서만</small></h3><div class="chat-log" id="chatLog" aria-live="polite"></div><form class="chat-row" id="chatForm" autocomplete="off"><input id="chatInput" maxlength="60" placeholder="메시지 입력 (Enter)" aria-label="채팅 메시지"><button type="submit" class="rbtn">보내기</button></form></section>
    </div>
   </div></div>
   <footer class="sfoot room-foot"><button class="rbtn ghost" id="roomLeave">방 나가기</button><button class="go" id="roomGo"><span id="roomGoLabel">게임 시작</span></button></footer>
@@ -382,7 +391,7 @@ window.addEventListener("error",()=>{if(!gameUiReady){const notice=document.getE
  실제 브라우저 레이아웃·기기 터치감·WebAudio 출력은 별도 실기 확인이 필요.
  */
 /* 단일 파일 / 외부 의존성 없음. 좌표는 칸 단위, 시간은 ms(이동만 초). */
-const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.42,MAX_SPEED:6,MAX_BOMB:8,MAX_POWER:8,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:5200,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,AI_COMMIT:900,AI_STUCK_GAP:1500};
+const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.42,MAX_SPEED:6,MAX_BOMB:8,MAX_POWER:8,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:5200,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:6000,ZONE_PLAN:9000};
 const MAPS=[
  {name:"빙하",density:.87,holes:.02,sw:"#7ecbea",f1:"#e3f7fc",f2:"#cceaf4",grid:"rgba(30,90,130,.07)",hTop:"#65c9ee",hSide:"#2389b8",hEdge:"#c5f6ff",sTop:"#ffffff",sSide:"#b7d6e7",sEdge:"#f0fbff",hard:"ice",soft:"snow"},
  {name:"사막",density:.89,holes:.13,sw:"#e8b654",f1:"#fbe8bb",f2:"#f1d79b",grid:"rgba(120,80,20,.07)",hTop:"#d88f56",hSide:"#995530",hEdge:"#f3c18d",sTop:"#f2bf71",sSide:"#b07836",sEdge:"#ffe3ac",hard:"brick",soft:"crate"},
@@ -670,6 +679,7 @@ function dangerMap(extra=null,chain=true){
  for(const b of G.blasts)for(const c of b.cells)h[c.y][c.x].push([0,Math.max(0,CFG.BLAST-b.t)]);
  if(G.wallPending)h[G.wallPending.y][G.wallPending.x].push([Math.max(0,G.wallPending.left),Infinity]);
  for(const q of G.zoneQueue)h[q.y][q.x].push([Math.max(0,q.at-G.roundMs),Infinity]);
+ if(zoneActive())for(const q of zoneForecast(CFG.ZONE_SEE))h[q.y][q.x].push([Math.max(0,q.at-G.roundMs),Infinity]);
  for(const [x,y]of G.zoneDeferred)h[y][x].push([0,Infinity]);
  for(const row of h)for(const list of row)list.sort((a,b)=>a[0]-b[0]);if(!extra)G.dangerCache[cacheKey]=h;return h;
 }
@@ -716,7 +726,7 @@ function routes(e,h,{limit=18,want=12,goal=()=>true,extra=null,margin=110}={}){
 function escapePlan(e,h,room=2,extra=null,margin=110){
  const opts=routes(e,h,{limit:12,want:12,extra,margin,goal:(x,y,t)=>safeInterval(h,x,y,t,t+CFG.FUSE+CFG.BLAST)});let best=null,score=-Infinity;
  for(const p of opts){const n=roomAt(e,p.x,p.y,h,room+3,extra);if(n<room)continue;const target=G.ents.find(o=>o.id===e.targetId&&o.alive&&!o.trapped),approach=target&&G.form==="ffa"?Math.abs(p.x-target.px)+Math.abs(p.y-target.py):0;
- const edge=zoneActive()?Math.max(0,zoneSafeDepth()-Math.min(p.x,p.y,14-p.x,12-p.y)):0;
+ const edge=zoneActive()?Math.max(0,zoneTargetDepth()-Math.min(p.x,p.y,14-p.x,12-p.y)):0;
  const s=n*.35-p.time*.003-p.dist*.5-approach*(personaOf(e).id==="rush"?.16:.07)-edge*.6;if(s>score){score=s;best=p;}}return best;
 }
 function fleePlan(e,h,room=2){return escapePlan(e,h,room)||escapePlan(e,h,1,null,25);}
@@ -727,7 +737,7 @@ const AI_CFG={
     notice: 남이 새로 놓은 물풍선을 알아채기까지 걸리는 시간(ms). 사람의 반응속도에 해당
     room: 회피할 때 확보하려는 여유 칸  react: 위험을 알아채는 시간 배수  chain: 연쇄 폭발까지 읽는지 */
  rookie:{tick:320,gap:2400,burstRate:.4, greed:6, lead:0,tactics:0,room:2,react:1.4,chain:true,farm:8, needleDelay:1500,notice:650},
- easy:  {tick:240,gap:1800,burstRate:.55,greed:7, lead:0,tactics:1,room:2,react:1.6,chain:true,farm:8, needleDelay:1000,notice:420},
+ easy:  {tick:280,gap:2100,burstRate:.5, greed:7, lead:0,tactics:1,room:2,react:1.45,chain:true,farm:8, needleDelay:1200,notice:600},
  normal:{tick:170,gap:1250,burstRate:.7, greed:8, lead:1,tactics:2,room:2,react:1.9,chain:true,farm:9, needleDelay:550,notice:220},
  hard:  {tick:110,gap:850, burstRate:.85,greed:9, lead:1,tactics:3,room:3,react:2.2,chain:true,farm:10,needleDelay:300,notice:90},
  master:{tick:70, gap:450, burstRate:1,  greed:10,lead:2,tactics:4,room:3,react:2.5,chain:true,farm:10,needleDelay:150,notice:0}
@@ -931,7 +941,7 @@ function farmPhase(e,target,c){
 }
 function arenaApproach(e,h){
  if(!zoneActive())return null;
- const depth=zoneSafeDepth(),inside=(x,y)=>x>=depth&&x<CFG.COLS-depth&&y>=depth&&y<CFG.ROWS-depth;
+ const depth=zoneTargetDepth(),inside=(x,y)=>x>=depth&&x<CFG.COLS-depth&&y>=depth&&y<CFG.ROWS-depth;
  const [x,y]=cellOf(e);if(inside(x,y))return null;
  const open=routes(e,h,{limit:20,want:1,goal:inside})[0];if(open)return {route:open,dir:open.dir,blocked:false};
  const dir=softPath(e,7,6,h),v=DV[dir];return v?{dir,blocked:G.grid[y+v[1]][x+v[0]]===2}:null;
@@ -1012,6 +1022,11 @@ function aiThink(e){
     예전엔 길 뚫기 목표(breach)나 추격이 먼저 잡혀서 옆에 있는 아이템을 지나쳤다. */
  const nearItem=item&&item.dist<=3&&!oscillating(e);
  if(nearItem){e.breachTarget=null;e.moveDir=item.dir;e.supportIntent="아이템 확보";return;}
+ /* 고수 이상: 지금 여기 물풍선을 놓으면 상대가 피할 곳이 없어지는지 계산해서, 없어지면 바로 놓는다(몰아넣기). */
+ if(c.tactics>=3&&canBomb&&target&&!target.trapped&&Math.abs(x-tc[0])+Math.abs(y-tc[1])<=e.power+3){
+  const extra={x,y,t:0,power:e.power,owner:e.id,pass:new Set()},h2=dangerMap(extra,true);
+  if(!safeInterval(h2,...tc,0,CFG.FUSE+CFG.BLAST)&&!escapePlan(target,h2,1,extra)&&safeBomb()){e.supportIntent="몰아넣기";drop();return;}
+ }
  // Keep the chosen detour across cells instead of snapping back to the blocked shortest path.
  if(followBreach(e,h,canBomb,safeBomb,drop)){e.supportIntent="길 열기";return;}
  if(oscillating(e)){
@@ -1133,13 +1148,27 @@ function zoneSafeDepth(){
  const front=G.zoneIdx<G.zoneOrder.length?ringDepth(...G.zoneOrder[G.zoneIdx]):CFG.ZONE_DEPTH+1;
  return Math.min(CFG.ZONE_DEPTH+2,front+1);
 }
-function zoneGap(){
- const next=G.zoneOrder[G.zoneIdx];
+function zoneGapAt(idx,nextAt){
+ const next=G.zoneOrder[idx];
  if(!next)return CFG.ZONE_MAX;
- if(ringDepth(next[0],next[1])>CFG.ZONE_DEPTH)return G.zoneIdx<=G.zoneMain?CFG.ZONE_SUDDEN_DELAY:CFG.ZONE_SUDDEN_GAP;
- const left=(MATCH.roundLimit-CFG.ZONE_TAIL)-G.zoneNextAt,remain=G.zoneMain-G.zoneIdx;
+ if(ringDepth(next[0],next[1])>CFG.ZONE_DEPTH)return idx<=G.zoneMain?CFG.ZONE_SUDDEN_DELAY:CFG.ZONE_SUDDEN_GAP;
+ const left=(MATCH.roundLimit-CFG.ZONE_TAIL)-nextAt,remain=G.zoneMain-idx;
  if(remain<=0)return CFG.ZONE_MAX;
  return Math.max(CFG.ZONE_MIN,Math.min(CFG.ZONE_MAX,left/remain));
+}
+function zoneGap(){return zoneGapAt(G.zoneIdx,G.zoneNextAt);}
+/* 축소 순서와 간격은 정해져 있으니, 앞으로 horizon ms 안에 무너질 칸과 시각을 미리 계산한다.
+   봇은 1초 예고만 보고 움직이면 늦는다. 이걸로 몇 초 앞을 보고 미리 안쪽으로 빠진다. */
+function zoneForecast(horizon){
+ if(!G||G.mode!=="battle"||!hasRoundLimit()||!G.zoneOrder?.length)return [];
+ const out=[],limit=G.roundMs+horizon;let idx=G.zoneIdx,at=G.zoneNextAt;
+ while(idx<G.zoneOrder.length&&at<=limit&&out.length<90){const [x,y]=G.zoneOrder[idx++];if(G.grid[y][x]===1)continue;out.push({x,y,at});at+=zoneGapAt(idx,at);}
+ return out;
+}
+/* 봇이 머물 목표 깊이: 몇 초 안에 무너질 가장 안쪽 링보다 한 칸 더 안. */
+function zoneTargetDepth(){
+ let d=zoneSafeDepth();for(const c of zoneForecast(CFG.ZONE_PLAN))d=Math.max(d,ringDepth(c.x,c.y)+1);
+ return Math.min(CFG.ZONE_DEPTH+2,d);
 }
 function zoneDone(){return !!G&&G.zoneIdx>=G.zoneOrder.length&&!G.zoneQueue.length&&!G.zoneDeferred.length;}
 /* 제한시간 안의 축소가 모두 끝난 상태 = 서든데스. 이후에는 시간 판정 없이 마지막 생존자까지 간다. */
@@ -1670,7 +1699,7 @@ $("guideBtn").addEventListener("click",()=>showOverlay("guide"));$("menuGuide").
    연결은 PeerJS(WebRTC)로 브라우저끼리 직접 붙는다. 주소 끝에 #local-net 을 붙이면
    같은 컴퓨터의 탭끼리 BroadcastChannel로 연결한다(테스트용). */
 let roundSeq=0;
-const NET={role:null,seats:1,lobby:null,lastDirs:[],peers:[],host:null,peer:null,myId:null,code:"",fx:[],lastSnap:0,staticRid:null,lastDir:undefined,lastDirAt:0,bc:location.hash==="#local-net",joinTimer:null};
+const NET={role:null,seats:1,lobby:null,lastDirs:[],chat:[],peers:[],host:null,peer:null,myId:null,code:"",fx:[],lastSnap:0,staticRid:null,lastDir:undefined,lastDirAt:0,bc:location.hash==="#local-net",joinTimer:null};
 const NET_SKIP_G=new Set(["dangerCache","parts","me","theme","bag","skyBag","spiral","deco","zoneOrder","visualT","shake"]);
 const NET_SKIP_E=new Set(["trail","lastCell","commitDir","commitUntil","targetId","targetUntil","thinkT","thinkCount","targetItem","breachTarget","decisionCell","yieldUntil","stuckBombAt","lastBombAt","netDir"]);
 const NET_SFX=["bomb","boom","item","big","trap","save","die","hit","pop","ride","clear","fail","boss","shot","warn"];
@@ -1692,7 +1721,7 @@ function netSend(obj){try{if(NET.host?.open!==false)NET.host?.send(JSON.stringif
 function netBroadcast(obj){const s=typeof obj==="string"?obj:JSON.stringify(obj);for(const p of NET.peers)try{p.conn.send(s);}catch{}}
 function netCode(){const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let c="";for(let i=0;i<5;i++)c+=A[Math.random()*A.length|0];return c;}
 function netErr(err){const t=err?.type||err?.message||"";return t==="peer-unavailable"?"그 코드의 방을 찾지 못했어요. 코드를 다시 확인해 주세요.":t==="network"||t==="server-error"||t==="socket-error"||t==="socket-closed"?"연결 서버에 닿지 못했어요. 인터넷 연결을 확인해 주세요.":t==="browser-incompatible"?"이 브라우저는 온라인 대전을 지원하지 않아요.":t==="no-peerjs"?"온라인 모듈을 불러오지 못했어요.":"연결 오류 ("+t+")";}
-function netReset(){clearTimeout(NET.joinTimer);try{NET.peer?.destroy();}catch{}Object.assign(NET,{role:null,peer:null,host:null,peers:[],myId:null,code:"",fx:[],staticRid:null,lastDir:undefined,lastDirs:[],seats:1,lobby:null,joined:false});}
+function netReset(){clearTimeout(NET.joinTimer);try{NET.peer?.destroy();}catch{}Object.assign(NET,{role:null,peer:null,host:null,peers:[],myId:null,code:"",fx:[],staticRid:null,lastDir:undefined,lastDirs:[],seats:1,lobby:null,joined:false,chat:[]});renderChat();}
 function netHost(){
  if(NET.role)netReset();NET.role="host";NET.code=netCode();netStatus("방을 만드는 중…");renderNet();
  let peer;try{peer=makePeer("wbb-"+NET.code);}catch(e){netReset();netStatus(netErr(e));renderNet();return;}
@@ -1717,7 +1746,7 @@ function netHostData(conn,raw){
   if(G&&MATCH?.online&&phase!=="menu"){conn.send(JSON.stringify({t:"deny",why:"지금 대전이 진행 중이에요. 판이 끝나고 로비로 돌아오면 다시 참가해 주세요."}));setTimeout(()=>conn.close(),300);return;}
   const want=d.seats===2?2:1;
   p={conn,id:conn.peer,chars:[validCharacter(d.char)?d.char:-1,validCharacter(d.char2)?d.char2:-1],seats:Math.min(want,free)};NET.peers.push(p);
-  conn.send(JSON.stringify({t:"welcome",id:conn.peer,seats:p.seats,want}));SFX.ui();netLobby();syncMenu();return;
+  conn.send(JSON.stringify({t:"welcome",id:conn.peer,seats:p.seats,want}));SFX.ui();netLobby();syncMenu();chatPost(null,chatName(p.id)+" 님이 들어왔어요.");return;
  }
  if(!p)return;
  if(d.t==="cfg"){
@@ -1727,6 +1756,7 @@ function netHostData(conn,raw){
   conn.send(JSON.stringify({t:"seats",seats:p.seats,want}));netLobby();syncMenu();return;
  }
  if(d.t==="ready"){p.ready=!!d.v;netLobby();return;}
+ if(d.t==="chat"){const now=performance.now();if(now-(p.lastChat||0)<400)return;p.lastChat=now;chatPost(chatName(p.id),d.m,p.id);return;}
  if(d.t==="team"){if((d.team===0||d.team===1)&&(d.s===0||d.s===1)&&!(G&&MATCH?.online&&phase!=="menu")){sel.teamPick={...sel.teamPick,[p.id+":"+d.s]:d.team};netLobby();syncMenu();}return;}
  const e=G?.ents.find(o=>o.netId===p.id&&(o.seat||0)===(d.s===1?1:0)&&!o.isBot);if(!e)return;
  if(d.t==="i")e.netDir=DV[d.d]?d.d:null;
@@ -1739,7 +1769,7 @@ function netDrop(conn){
  const i=NET.peers.findIndex(x=>x.conn===conn);if(i<0)return;const p=NET.peers[i];NET.peers.splice(i,1);
  if(MATCH)for(const pl of MATCH.players.filter(x=>x.netId===p.id)){pl.human=false;pl.ctl=null;pl.diff="normal";pl.netId=null;}
  const gone=G?G.ents.filter(o=>o.netId===p.id):[];for(const e of gone){e.isBot=true;e.human=false;e.ctl=null;e.netId=null;e.diff="normal";e.persona=1;e.netDir=null;flash(e,"연결 끊김 · 봇이 대신합니다","#ffd993");}if(gone.length)buildRoster();
- netLobby();syncMenu();
+ netLobby();syncMenu();chatPost(null,"친구가 나갔어요.");
 }
 /* 로비 명단: 자리 순서, 누구 자리인지, 캐릭터, 팀. 방장과 참가자가 같은 목록을 본다. */
 function netLobbyList(){
@@ -1784,6 +1814,7 @@ function netGuestData(raw){
  if(d.t==="seats"){NET.seats=d.seats===2?2:1;if(d.want>d.seats)netStatus("자리가 모자라 이 컴퓨터는 1명만 할 수 있어요.");renderNet();renderRoom();return;}
  if(d.t==="deny"){const why=d.why;netReset();netStatus(why);syncMenu();return;}
  if(d.t==="lobby"){NET.lobby=d;renderNet();renderRoom();return;}
+ if(d.t==="chat"){chatAdd(d);return;}
  if(d.t==="s"){netApply(d);return;}
  if(d.t==="result"){if(!G)return;MATCH=d.m;showResult();return;}
  if(d.t==="menu"){showRoomScreen();netStatus("대기실로 돌아왔어요. 준비 버튼을 눌러 주세요.");syncMenu();}
@@ -1919,6 +1950,35 @@ $("roomSlots").addEventListener("change",ev=>{
  if(el.dataset.botChar!=null||el.dataset.botDiff!=null){const slot=Number(el.dataset.botChar??el.dataset.botDiff),arr=Array.from({length:3},(_,i)=>botOption(i+1));if(slot<1||slot>3)return;
   if(el.dataset.botChar!=null){if(!validCharacter(v))return;arr[slot-1].char=v;}else{if(!Object.keys(AI_CFG).includes(el.value))return;arr[slot-1].diff=el.value;}
   sel.botSlots=arr;saveSettings();syncMenu();netLobby();}
+});
+
+
+/* ───────── 대기실 채팅 (게임 중에는 없음) ─────────
+   참가자는 방장에게 보내고, 방장이 모두에게 다시 돌린다. */
+function chatName(owner){
+ const list=netLobbyList(),slot=list.findIndex(p=>p.owner===owner),p=list[slot];
+ if(!p)return owner==="host"?"방장":"친구";
+ return "P"+(slot+1)+" "+(validCharacter(p.char)&&p.char>=0?CHARS[p.char].name:"")+(owner==="host"?"(방장)":"");
+}
+function chatClean(m){return String(m??"").replace(/\s+/g," ").trim().slice(0,60);}
+function chatPost(from,m,owner=null){
+ if(NET.role!=="host")return;m=chatClean(m);if(!m)return;
+ const msg={t:"chat",from,m,owner};chatAdd(msg);netBroadcast(msg);
+}
+function chatAdd(msg){
+ NET.chat.push({from:msg.from==null?null:chatClean(msg.from),m:chatClean(msg.m),owner:msg.owner||null});
+ if(NET.chat.length>60)NET.chat.shift();
+ renderChat();if(msg.from!=null&&!$("room").classList.contains("hide"))SFX.ui();
+}
+function renderChat(){
+ const log=$("chatLog");if(!log)return;const esc=t=>t.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const me=NET.role==="host"?"host":NET.myId;
+ log.innerHTML=NET.chat.length?NET.chat.map(c=>c.from==null?`<p class="sys">${esc(c.m)}</p>`:`<p class="${c.owner===me?"me":""}"><b>${esc(c.from)}</b>${esc(c.m)}</p>`).join(""):'<p class="sys">대기실에서만 대화할 수 있어요. 게임이 시작되면 채팅창은 닫혀요.</p>';
+ log.scrollTop=log.scrollHeight;
+}
+$("chatForm").addEventListener("submit",ev=>{
+ ev.preventDefault();const input=$("chatInput"),m=chatClean(input.value);if(!m||!NET.role)return;input.value="";
+ if(NET.role==="host")chatPost(chatName("host"),m,"host");else netSend({t:"chat",m});
 });
 
 /* 설정 */
