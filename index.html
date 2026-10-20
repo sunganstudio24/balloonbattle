@@ -347,6 +347,33 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
 #app.bigmap #roster .member-info small{font-size:9px}
 #app.bigmap #hud .subvalue,#app.bigmap #hud .rail-heading small,#app.bigmap #hud #stateLine,#app.bigmap #hud .block-rules{display:none}
 }
+/* 캐릭터 선택 화면(크아식: 3×3, 가운데 랜덤, 오른쪽 능력치) */
+.cp{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;background:rgba(3,30,60,.62);padding:16px;word-break:keep-all}
+.cp[hidden]{display:none}
+.cp-box{width:min(880px,100%);max-height:100%;overflow:auto;background:#eaf6ff;border:3px solid #fff;border-radius:20px;box-shadow:0 6px 0 #003e7c;color:#123}
+.cp-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0a5fa8;color:#fff;border-radius:16px 16px 0 0;font-size:18px}
+.cp-x{background:none;border:0;color:#fff;font-size:26px;line-height:1;cursor:pointer}
+.cp-main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;padding:14px}
+.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cp-card{background:#fff;border:2px solid #cfe4f5;border-radius:14px;padding:6px 4px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;color:inherit}
+.cp-card svg{width:72px;height:auto}
+.cp-card b{font-size:14px}.cp-card small{font-size:11px;color:#56708a}
+.cp-card.on{border-color:#1b8be0;background:#e3f3ff;box-shadow:0 0 0 3px #8fd0ff}
+.cp-card.rand{background:#fffbe8;border-color:#f2d77a}
+.cp-info{background:#fff;border:2px solid #cfe4f5;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.cp-portrait{display:flex;align-items:center;gap:12px}.cp-portrait svg{width:96px;height:auto;flex:none}
+.cp-name{font-size:22px;font-weight:900}.cp-type{font-size:12px;color:#1b6fb0;font-weight:700}
+.cp-tag{font-size:13px;color:#33506b;line-height:1.5}
+.cp-stat{display:grid;grid-template-columns:52px 1fr 56px;align-items:center;gap:8px;font-size:12px;font-weight:700}
+.cp-bar{position:relative;height:12px;border-radius:6px;background:#e3edf6;overflow:hidden}
+.cp-bar i{position:absolute;top:0;bottom:0;left:0;border-radius:6px}
+.cp-bar .mx{background:#b9dcf7}.cp-bar .st{background:#1b8be0}
+.cp-stat span:last-child{text-align:right;color:#33506b}
+.cp-extra{font-size:12px;color:#7a4b00;background:#fff4d6;border-radius:8px;padding:6px 8px}
+.cp-foot{padding:0 14px 14px;display:flex;justify-content:flex-end}
+.cp-ok{background:#ffcd3c;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:900;font-size:16px;color:#5a3600;box-shadow:0 3px 0 #c98d00;cursor:pointer}
+.cp-open{margin-left:8px;background:#1b8be0;color:#fff;border:0;border-radius:8px;padding:4px 9px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+@media(max-width:700px){.cp-main{grid-template-columns:1fr}.cp-card svg{width:54px}}
 </style>
 </head>
 <body>
@@ -450,7 +477,7 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
       <div class="room-seat" id="roomSeatRow"><span>이 컴퓨터에서 할 사람</span><div class="rseg mini" id="roomSeats"><button type="button" data-v="1">1명</button><button type="button" data-v="2">2명 · 한 키보드</button></div></div>
       <div id="roomKeys"></div>
      </section>
-     <section class="rpanel r-palette"><div class="rp-head"><h3>캐릭터 선택</h3><span class="rp-hint" id="palHint"></span><div class="rseg mini" id="palTarget" hidden><button type="button" data-v="0">1P 고르기</button><button type="button" data-v="1">2P 고르기</button></div></div><div class="rp-chars" id="palChars"></div></section>
+     <section class="rpanel r-palette"><div class="rp-head"><h3>캐릭터 선택</h3><button type="button" class="cp-open" data-open-cp="0">크게 보고 고르기</button><span class="rp-hint" id="palHint"></span><div class="rseg mini" id="palTarget" hidden><button type="button" data-v="0">1P 고르기</button><button type="button" data-v="1">2P 고르기</button></div></div><div class="rp-chars" id="palChars"></div></section>
      <section class="rpanel room-chat" id="roomChat" hidden><h3>채팅 <small>대기실에서만</small></h3><div class="chat-log" id="chatLog" aria-live="polite"></div><form class="chat-row" id="chatForm" autocomplete="off"><input id="chatInput" maxlength="60" placeholder="메시지 입력 (Enter)" aria-label="채팅 메시지"><button type="submit" class="rbtn">보내기</button></form></section>
     </div>
     <div class="r-right">
@@ -468,6 +495,7 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
   <footer class="sfoot room-foot"><button class="rbtn ghost" id="roomLeave">나가기</button><button class="go" id="roomGo"><span id="roomGoLabel">게임 시작</span></button></footer>
  </section>
  <section class="screen hide" id="result" aria-label="게임 결과"><div class="sbody resultcenter"><div class="result-sheet"><p class="result-eyebrow" id="resultEyebrow">BATTLE COMPLETE</p><div class="result-emblem" id="resultEmblem" aria-hidden="true"></div><div class="resultTitle" id="resultTitle"></div><p class="resultSub" id="resultSub"></p><div class="card" id="resultDetail" hidden></div><p class="result-message" id="resultMessage"></p></div></div><footer class="sfoot"><div class="rowbtn result-actions"><button class="primary" id="contBtn" hidden>이어하기</button><button class="primary" id="againBtn">한 판 더!</button><button id="backBtn">로비로</button></div></footer></section>
+ <div id="charPick" class="cp" hidden role="dialog" aria-modal="true" aria-label="캐릭터 선택"><div class="cp-box"><header class="cp-head"><b id="cpTitle">캐릭터 선택</b><button type="button" class="cp-x" id="cpClose" aria-label="닫기">×</button></header><div class="cp-main"><div class="cp-grid" id="cpGrid"></div><div class="cp-info" id="cpInfo"></div></div><footer class="cp-foot"><button type="button" class="cp-ok" id="cpOk">이 캐릭터로 결정</button></footer></div></div>
  <section class="screen hide" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle"><div class="dialog-shell"><div class="sbody" id="overlayBody">
   <div class="dialog-head"><div class="dialog-symbol" id="overlaySymbol"><span class="ui-icon" data-ui="pause"></span></div><div><h2 id="overlayTitle" tabindex="-1">잠깐 쉬어가기</h2><p class="hint" id="overlayNote"></p></div></div>
   <div class="card" id="pauseInfo"></div>
@@ -2619,7 +2647,7 @@ function renderRoom(){
   const x=p.isBot&&edit?`<button type="button" class="rs-x" data-rm-bot="${slot}" ${st.count-1<st.minCount?"disabled":""} aria-label="P${slot+1} 봇 빼기" title="봇 빼기">×</button>`:"";
   const ready=online&&!p.isBot&&p.owner!=="host"&&p.ready?'<span class="rs-stamp">READY</span>':"";
   const art=validCharacter(p.char)&&p.char>=0?avatarSVG(p.char,"down",true):randomCharacterSVG();
-  const av=p.isBot&&edit?`<button type="button" class="rs-avatar" data-bot-char="${slot}" title="눌러서 봇 캐릭터 바꾸기">${art}</button>`:`<div class="rs-avatar">${art}</div>`;
+  const av=p.isBot&&edit?`<button type="button" class="rs-avatar" data-bot-char="${slot}" title="눌러서 봇 캐릭터 바꾸기">${art}</button>`:tag?`<button type="button" class="rs-avatar" data-open-cp="${tag==="2P"?1:0}" title="눌러서 캐릭터 고르기">${art}</button>`:`<div class="rs-avatar">${art}</div>`;
   cells.push(`<div class="rslot${tc}${tag?" t"+tag:""}"><div class="rs-top"><span class="rs-no">P${slot+1}</span>${crown}${badge}${x}</div>${av}<div class="rs-pedestal"></div><div class="rs-name">${nm(p.char)}</div><div class="rs-tag">${who}</div>${ctl}${ready}</div>`);
  }
  $("roomSlots").innerHTML=cells.join("");$("roomSlots").classList.toggle("solo-stage",stage);
@@ -2672,6 +2700,35 @@ $("roomSeats").addEventListener("click",ev=>{
  else if(NET.role==="guest"){sel.seats=v;saveSettings();netCfg();renderRoom();SFX.ui();}
  else{sel.play=v===2?"local":"one";ROOM.palTarget=0;reteam();roomChanged();}
 });
+
+/* ───── 캐릭터 선택 화면 ───── */
+const CP={target:0,sel:0};
+const CP_ORDER=[0,1,2,3,-1,4,5,6,7];
+const CP_TYPES=["스피드 타입","물풍선 타입","물줄기 타입","탈출 전문가","균형 타입","물풍선 타입","물줄기 타입","방어 타입"];
+function cpInfoHTML(i){
+ if(i<0)return `<div class="cp-portrait">${randomCharacterSVG()}<div><div class="cp-name">랜덤</div><div class="cp-type">무작위</div></div></div><p class="cp-tag">시작할 때 8명 중 한 명으로 정해져요. 한 매치 동안은 같은 캐릭터로 유지됩니다.</p>`;
+ const c=CHARS[i],bar=(lab,st,mx,top,show)=>`<div class="cp-stat"><span>${lab}</span><div class="cp-bar"><i class="mx" style="width:${mx/top*100}%"></i><i class="st" style="width:${st/top*100}%"></i></div><span>${show(st)} → ${show(mx)}</span></div>`;
+ const extra=[c.needles?"바늘 "+c.needles+"개로 시작":"",c.shields?"방패 "+c.shields+"개로 시작":""].filter(Boolean).join(" · ");
+ return `<div class="cp-portrait">${avatarSVG(i,"down",true)}<div><div class="cp-name">${c.name}</div><div class="cp-type">${CP_TYPES[i]||""}</div></div></div><p class="cp-tag">${c.tag}</p>`
+  +bar("물풍선",c.bombs,c.maxB,10,v=>v+"개")+bar("물줄기",c.power,c.maxP,8,v=>v+"칸")+bar("스피드",c.speed,c.maxS,5,v=>String(spdShow(v)))
+  +`<p class="cp-tag" style="margin:0;font-size:11px">진한 색은 시작값, 연한 색은 아이템으로 올릴 수 있는 최대치.</p>`+(extra?`<div class="cp-extra">${extra}</div>`:"");
+}
+function cpRender(){
+ $("cpGrid").innerHTML=CP_ORDER.map(i=>`<button type="button" class="cp-card${i<0?" rand":""}${CP.sel===i?" on":""}" data-cp="${i}" aria-pressed="${CP.sel===i}">${i<0?randomCharacterSVG():avatarSVG(i,"down",true)}<b>${i<0?"랜덤":CHARS[i].name}</b><small>${i<0?"무작위":CHARS[i].strong}</small></button>`).join("");
+ $("cpInfo").innerHTML=cpInfoHTML(CP.sel);setText("cpTitle",CP.target===1?"2P 캐릭터 선택":"캐릭터 선택");
+}
+function openCharPick(target=0){CP.target=target;CP.sel=target===1?sel.p2char:sel.char;if(!validCharacter(CP.sel))CP.sel=-1;cpRender();$("charPick").hidden=false;SFX.ui();setTimeout(()=>$("cpGrid").querySelector(".on")?.focus(),0);}
+function closeCharPick(){$("charPick").hidden=true;}
+$("cpGrid").addEventListener("click",ev=>{const b=ev.target.closest("[data-cp]");if(!b)return;CP.sel=Number(b.dataset.cp);cpRender();SFX.ui();$("cpGrid").querySelector(".on")?.focus();});
+$("cpGrid").addEventListener("dblclick",ev=>{const b=ev.target.closest("[data-cp]");if(!b)return;pickChar(CP.target,Number(b.dataset.cp));closeCharPick();});
+$("cpOk").addEventListener("click",()=>{pickChar(CP.target,CP.sel);closeCharPick();});
+$("cpClose").addEventListener("click",closeCharPick);
+$("charPick").addEventListener("click",ev=>{if(ev.target.id==="charPick")closeCharPick();});
+document.addEventListener("keydown",ev=>{if($("charPick").hidden)return;if(ev.key==="Escape"){ev.preventDefault();ev.stopPropagation();closeCharPick();return;}
+ const k=CP_ORDER.indexOf(CP.sel),mv={ArrowLeft:-1,ArrowRight:1,ArrowUp:-3,ArrowDown:3}[ev.key];
+ if(mv!=null){ev.preventDefault();ev.stopPropagation();const n=k+mv;if(n>=0&&n<9){CP.sel=CP_ORDER[n];cpRender();$("cpGrid").querySelector(".on")?.focus();}}
+ else if(ev.key==="Enter"&&!ev.target.closest?.(".cp-x")){ev.preventDefault();pickChar(CP.target,CP.sel);closeCharPick();}},true);
+document.addEventListener("click",ev=>{const b=ev.target.closest("[data-open-cp]");if(!b)return;ev.preventDefault();openCharPick(Number(b.dataset.openCp)||0);});
 $("palChars").addEventListener("click",ev=>{const b=ev.target.closest("[data-char]");if(!b)return;pickChar(roomSeatsHere()===2?ROOM.palTarget:0,Number(b.dataset.char));});
 $("palChars").addEventListener("contextmenu",ev=>{const b=ev.target.closest("[data-char]");if(!b)return;ev.preventDefault();if(roomSeatsHere()===2)pickChar(1,Number(b.dataset.char));});
 $("palTarget").addEventListener("click",ev=>{const b=ev.target.closest("button[data-v]");if(!b)return;ROOM.palTarget=Number(b.dataset.v);renderRoom();SFX.ui();});
