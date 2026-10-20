@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#087ac9">
 <title>물풍선 배틀 · 아케이드 에디션</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Ccircle cx=%2232%22 cy=%2236%22 r=%2224%22 fill=%22%2349b3f5%22/%3E%3Ccircle cx=%2224%22 cy=%2228%22 r=%227%22 fill=%22white%22 opacity=%22.7%22/%3E%3Cpath d=%22M28 10h8l-2 4h-4z%22 fill=%22%23f5b73b%22/%3E%3C/svg%3E">
-<style>
+<style>#blockRules{display:none!important}
 :root{
  --u:1;--ink:#14355c;--muted:#597692;--blue:#148ef0;--navy:#064681;
  --paper:#f7fcff;--line:#b9d9ee;--yellow:#ffdc55;--red:#ec607e;
@@ -374,6 +374,23 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
 .cp-ok{background:#ffcd3c;border:0;border-radius:12px;padding:12px 22px;font:inherit;font-weight:900;font-size:16px;color:#5a3600;box-shadow:0 3px 0 #c98d00;cursor:pointer}
 .cp-open{margin-left:8px;background:#1b8be0;color:#fff;border:0;border-radius:8px;padding:4px 9px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
 @media(max-width:700px){.cp-main{grid-template-columns:1fr}.cp-card svg{width:54px}}
+
+/* HUD: 웹 대시보드 대신 게임 패널처럼 */
+#hud{background:linear-gradient(180deg,#2d64b8,#173a78)!important;border:3px solid #ffd84d!important;border-radius:18px!important;box-shadow:0 5px 0 #0b2550,inset 0 0 0 2px #5f97e6!important;color:#fff}
+#hud .rail-heading{color:#fff;text-shadow:0 2px 0 #0b2550;letter-spacing:.5px}
+#hud .rail-heading small,#hud .subvalue,#hud .rail-label span{display:none!important}
+#app:not(.touch) #hud .rail-label{color:#ffe45c;text-shadow:0 1px 0 #0b2550;font-weight:900}
+#hud .member{background:#123a78!important;border:2px solid #5d8fdc!important;border-bottom-width:4px!important;border-radius:14px!important;color:#fff!important}
+#hud .member.enemy{border-color:#ff7f8e!important}
+#hud .member small{color:#bcd5f7!important}
+#hud .member-portrait{background:#fff6!important;border-radius:50%}
+#hud .stat,#hud .islot{background:radial-gradient(circle at 50% 30%,#4b86d6,#22498a)!important;border:2px solid #9cc8ff!important;border-bottom:4px solid #0d2a58!important;border-radius:14px!important;color:#fff!important}
+#hud .islot.auto{background:radial-gradient(circle at 50% 30%,#d5a420,#8a6208)!important;border-color:#ffe28a!important}
+#hud .islot.empty{opacity:.75;filter:saturate(.5)}
+#hud .stat .value,#hud .islot .value{color:#ffe45c!important;font-size:20px;text-shadow:0 2px 0 #0b2550}
+#hud .stat .label,#hud .islot .label{color:#e8f2ff}
+#hud #stateLine,#hud #stateLine *{color:#e6f0ff!important;opacity:1!important;}#hud #stateLine{border-color:#4c7cc4!important}
+#hud #stateLine.urgent{color:#ffcf5c!important}
 </style>
 </head>
 <body>
@@ -544,7 +561,7 @@ window.addEventListener("error",()=>{if(!gameUiReady){const notice=document.getE
  실제 브라우저 레이아웃·기기 터치감·WebAudio 출력은 별도 실기 확인이 필요.
  */
 /* 단일 파일 / 외부 의존성 없음. 좌표는 칸 단위, 시간은 ms(이동만 초). */
-const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.26,MAX_SPEED:9,MAX_BOMB:10,MAX_POWER:7,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:6000,MOB_DASH:4.6,MOB_REST:950,STAGE_POP:1400,RESPAWN_DELAY:1300,RESPAWN_INVULN:2600,STALL_HINT:40000,EGG_HATCH:5000,STAGE_DROP:.14,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:6000,ZONE_PLAN:9000};
+const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.26,MAX_SPEED:9,MAX_BOMB:10,MAX_POWER:7,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:6000,MOB_DASH:4.6,MOB_REST:950,STAGE_POP:1400,RESPAWN_DELAY:1300,RESPAWN_INVULN:2600,STALL_HINT:40000,EGG_HATCH:5000,STAGE_DROP:.14,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,PUSH_MS:230,BUSH_RATE:.07,PUSH_RATE:.10,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:12000,ZONE_PLAN:16000};
 const MAPS=[
  {name:"빙하",density:.87,holes:.02,sw:"#7ecbea",f1:"#e3f7fc",f2:"#cceaf4",grid:"rgba(30,90,130,.07)",hTop:"#65c9ee",hSide:"#2389b8",hEdge:"#c5f6ff",sTop:"#ffffff",sSide:"#b7d6e7",sEdge:"#f0fbff",hard:"ice",soft:"snow"},
  {name:"사막",density:.89,holes:.13,sw:"#e8b654",f1:"#fbe8bb",f2:"#f1d79b",grid:"rgba(120,80,20,.07)",hTop:"#d88f56",hSide:"#995530",hEdge:"#f3c18d",sTop:"#f2bf71",sSide:"#b07836",sEdge:"#ffe3ac",hard:"brick",soft:"crate"},
@@ -766,6 +783,7 @@ function newRound(carry=null,title=null,sub=null){setBoard(...boardFor(MATCH.mod
  if(mode==="stage"&&sub==null)sub=stageIntroSub(stage);const introMs=title?(mode==="stage"&&sub?2600:2100):mode==="stage"?2300:1300;
  const ents=spawns.map((p,i)=>makeEntity("e"+i,...p,picks[i],!MATCH.players[i].human));ents.forEach((e,i)=>{const pl=MATCH.players[i];e.team=form==="ffa"?i:form==="team"?pl.team:pl.human?0:1;e.ctl=pl.ctl;e.netId=pl.netId;e.seat=pl.seat||0;if(e.isBot){e.diff=pl.diff;e.persona=pl.persona;const kit=BOT_KIT[e.diff];if(kit&&MATCH.mode==="battle"){e.needles=Math.max(e.needles,kit.needles);e.base.needles=e.needles;e.shields=Math.max(e.shields||0,kit.shields);}}});if(carry)Object.assign(ents[0],carry);
  G={rid:++roundSeq,cols:CFG.COLS,rows:CFG.ROWS,mode,form,stage,round:MATCH.round,mapIdx:idx,intro:introMs,introMax:introMs,introTitle:title,introSub:sub,grid:buildGrid(idx,spawns,mode==="stage"?stageDensity(stage):null),deco:grid(()=>Math.random()<.24?1:0),theme:MAPS[idx],ents,me:ents[0],mobs:[],mobSeq:0,falls:[],wallFx:[],breakFx:[],parts:[],freeze:0,boss:null,shots:[],isBoss:mode==="stage"&&stageInfo(stage).boss,warns:[],eggs:[],respawnT:0,stallHint:false,spiral:spiralCells(),wallPending:null,zoneOrder:[],zoneIdx:0,zoneQueue:[],zoneDeferred:[],zoneNextAt:CFG.ZONE_START,zoneOn:false,zoneAlert:false,zoneSfx:0,zoneWalls:null,zoneMain:0,sudden:false,suddenIdle:0,suddenAlive:0,finishReason:null,idleT:0,stallT:0,stalled:false,hunt:false,bombs:[],blasts:[],items:[],floats:[],bag:[],skyBag:[],zones:new Array(6).fill(0),skyT:CFG.SKY_FIRST,skyGap:CFG.SKY_EVERY,t:0,roundMs:0,visualT:0,over:false,winner:null,winnerId:null,winnerIds:[],roundScored:false,endDelay:0,shake:0,dangerCache:{},reward:false};
+ G.push={};G.bush={};if(mode!=="stage")decorateGrid(spawns);
  /* 드랍률: 블록 수와 인원에 맞춰 한 사람당 아이템이 7개쯤 나오게(0.34~0.55). 맵이 커지거나 인원이 늘어도 템이 모자라지 않게. */
  {const soft=G.grid.flat().filter(v=>v===2).length;G.dropRate=Math.max(.34,Math.min(.55,7*ents.length/Math.max(1,soft)));}
  buildZone();if(mode==="stage"){MATCH.stageCarry=carry?{...carry}:null;spawnStage(stage);}ffOn=false;enterPlayUI();}
@@ -841,7 +859,7 @@ function checkEnd(){
 
 /* 이동: 벽을 넘지 않는 중심점 단위 적분. */
 
-function moveEntity(e,dir,dt){if(!dir||e.trapped||!e.alive||!(dt>0))return;const [dx,dy]=DV[dir];e.dir=dir;const horiz=dx!==0,sgn=horiz?dx:dy;let budget=speedOf(e)*dt,cross=horiz?e.py:e.px,along=horiz?e.px:e.py;const c=Math.round(along),near=Math.round(cross),far=cross>near?near+1:near-1,here=t=>horiz?walkable(c,t,e):walkable(t,c,e),ahead=t=>horiz?walkable(c+sgn,t,e):walkable(t,c+sgn,e);let tc=near;
+function moveEntity(e,dir,dt){if(!dir||e.trapped||!e.alive||!(dt>0))return;tryPush(e,dir,dt);const [dx,dy]=DV[dir];e.dir=dir;const horiz=dx!==0,sgn=horiz?dx:dy;let budget=speedOf(e)*dt,cross=horiz?e.py:e.px,along=horiz?e.px:e.py;const c=Math.round(along),near=Math.round(cross),far=cross>near?near+1:near-1,here=t=>horiz?walkable(c,t,e):walkable(t,c,e),ahead=t=>horiz?walkable(c+sgn,t,e):walkable(t,c+sgn,e);let tc=near;
  if(Math.abs(cross-near)>CFG.EPS&&!ahead(near)&&ahead(far)&&here(far)&&Math.abs(cross-far)<1)tc=far;
  if(Math.abs(cross-tc)>CFG.EPS){if(!here(tc))return;const n=Math.min(Math.abs(tc-cross),budget*CFG.TURN_BOOST);cross+=Math.sign(tc-cross)*n;budget-=n/CFG.TURN_BOOST;if(horiz)e.py=cross;else e.px=cross;if(Math.abs(cross-tc)>CFG.EPS)return;}
  if(horiz)e.py=tc;else e.px=tc;
@@ -860,9 +878,57 @@ function blastCells(b,g=G.grid){const cells=[{x:b.x,y:b.y,kind:"c"}];for(const [
 function placeBomb(e,at=null){if(!combatActive()||!e?.alive||e.trapped||activeBombs(e)>=bombCapOf(e))return false;const [x,y]=at||cellOf(e);if(!inb(x,y)||bombAt(x,y)||G.grid[y][x]!==0)return false;const pass=new Set(at?[e.id]:[]),lead=at?e.id:null;for(const o of [...G.ents,...G.mobs,...(G.boss?[G.boss]:[])])if(o.alive&&cellOf(o)[0]===x&&cellOf(o)[1]===y)pass.add(o.id);G.bombs.push({x,y,t:0,power:e.power,owner:e.id,pass,lead});invalidateDanger();SFX.bomb();spark(x+.5,y+.5,4,"#bfe6ff",{sp:1.1,life:260,r:.05,g:1.5});updateHud();return true;}
 function removeItemAt(x,y){const i=G.items.findIndex(t=>t.x===x&&t.y===y);if(i<0)return;G.zones[zoneOf(x,y)]=Math.max(0,G.zones[zoneOf(x,y)]-1);G.items.splice(i,1);}
 /* 동시/연쇄 폭발은 동일한 벽 스냅샷에서 모두 확정한다. 배열 순서에 따른 한 프레임 지연 없음. */
+
+/* ── 크아식 지형: 밀리는 블록(나무상자)과 풀숲 ──
+   밀리는 블록은 grid=2(깨지는 블록)에 G.push 표시만 얹은 것이라 물줄기·봇 판단은 기존 블록 그대로 따른다.
+   풀숲은 grid=0 칸에 G.bush 표시. 지나갈 수 있고, 안에 들어간 캐릭터는 다른 플레이어 화면에서 안 보인다. */
+function decorateGrid(spawns){
+ const nearSpawn=(x,y,d)=>spawns.some(p=>Math.abs(p[0]-x)+Math.abs(p[1]-y)<=d),forest=G.theme.soft==="tree",
+  bushRate=CFG.BUSH_RATE*(forest?1.8:1),soft=[];
+ for(let y=1;y<CFG.ROWS-1;y++)for(let x=1;x<CFG.COLS-1;x++)if(G.grid[y][x]===2&&!nearSpawn(x,y,3)&&!G.hidden?.has(key(x,y)))soft.push([x,y]);
+ shuffle(soft);
+ const nb=Math.round(soft.length*bushRate),np=Math.round(soft.length*CFG.PUSH_RATE);
+ /* 풀숲은 2~3칸 덩어리로: 씨앗 칸 옆의 블록도 같이 풀숲으로 */
+ let made=0;for(const [x,y]of soft){if(made>=nb)break;if(G.grid[y][x]!==2)continue;G.grid[y][x]=0;G.bush[key(x,y)]=1;made++;
+  for(const [,dx,dy]of shuffle(DIR4.slice())){if(made>=nb||Math.random()<.45)continue;const a=x+dx,b=y+dy;if(interior(a,b)&&G.grid[b][a]===2&&!nearSpawn(a,b,3)&&!G.hidden?.has(key(a,b))){G.grid[b][a]=0;G.bush[key(a,b)]=1;made++;}}}
+ let pm=0;for(const [x,y]of soft){if(pm>=np)break;if(G.grid[y][x]===2){G.push[key(x,y)]=1;pm++;}}
+}
+function hiddenInBush(e){if(!G?.bush||!e||e.trapped||e.mob)return false;const x=Math.round(e.px),y=Math.round(e.py);if(!inb(x,y)||!G.bush[key(x,y)])return false;return !localPlayers().includes(e);}
+function tryPush(e,dir,dt){
+ if(!G.push||e.mob||e.id==="boss"||NET.role==="guest")return;const [dx,dy]=DV[dir],cx=Math.round(e.px),cy=Math.round(e.py);
+ const tx=cx+dx,ty=cy+dy,nx=tx+dx,ny=ty+dy,k=key(tx,ty);
+ const aligned=Math.abs(e.px-cx)<.12&&Math.abs(e.py-cy)<.12;
+ if(!aligned||!inb(tx,ty)||G.grid[ty][tx]!==2||!G.push[k]){e.pushT=0;return;}
+ const blocked=!inb(nx,ny)||!interior(nx,ny)||G.grid[ny][nx]!==0||G.bush[key(nx,ny)]||bombAt(nx,ny)||G.items.some(i=>i.x===nx&&i.y===ny)||
+  [...G.ents,...G.mobs].some(a=>a.alive&&Math.round(a.px)===nx&&Math.round(a.py)===ny)||G.zoneWalls?.has?.(key(nx,ny));
+ if(blocked){e.pushT=0;return;}
+ e.pushT=(e.pushT||0)+dt*1000;if(e.pushT<CFG.PUSH_MS)return;e.pushT=0;
+ G.grid[ty][tx]=0;G.grid[ny][nx]=2;delete G.push[k];G.push[key(nx,ny)]=1;
+ if(G.deco){const d=G.deco[ty][tx];G.deco[ty][tx]=G.deco[ny][nx];G.deco[ny][nx]=d;}
+ const hid=G.hidden?.get(k);if(hid){G.hidden.delete(k);G.hidden.set(key(nx,ny),hid);}
+ invalidateDanger();
+}
+function drawPushArt(x,y,th){
+ const px=x*ts,py=y*ts,m=ts*.06,bx=px+m,by=py-ts*.12,bw=ts-m*2,bh=ts*1.02;
+ ellipse(px+ts*.5,py+ts*.86,ts*.36,ts*.11,"#0c162a33");
+ ctx.fillStyle="#9a5f2e";rrect(bx,by+bh*.22,bw,bh*.78,ts*.1);ctx.fill();ink(.03);
+ ctx.fillStyle="#d4934f";rrect(bx,by,bw,bh*.4,ts*.1);ctx.fill();ink(.03);
+ ctx.strokeStyle="#7a4520";ctx.lineWidth=Math.max(1.5,ts*.05);
+ for(const f of [.32,.68]){ctx.beginPath();ctx.moveTo(bx+bw*f,by+bh*.42);ctx.lineTo(bx+bw*f,by+bh*.96);ctx.stroke();}
+ ctx.beginPath();ctx.moveTo(bx+bw*.1,by+bh*.5);ctx.lineTo(bx+bw*.9,by+bh*.9);ctx.stroke();
+ ctx.fillStyle="#fff3d6";const c=px+ts*.5,t=by+bh*.2,a=ts*.11;
+ for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(c+s*a*2.1,t);ctx.lineTo(c+s*a*1.2,t-a*.7);ctx.lineTo(c+s*a*1.2,t+a*.7);ctx.closePath();ctx.fill();}
+}
+function drawBush(x,y){
+ const local=localPlayers().some(e=>e.alive&&Math.round(e.px)===x&&Math.round(e.py)===y);
+ const c=cellSprite("bu"+G.mapIdx,()=>{const base=ts*.98,cols=["#5f9e2f","#7dbb35","#9bd141","#b8e05a"];
+  for(let i=0;i<4;i++)for(let n=0;n<7;n++){const fx=-.08+n*.19+(i%2)*.09,h=.55+((n*37+i*11)%5)*.07-i*.06,lean=((n+i)%3-1)*.09;
+   ctx.fillStyle=cols[i];ctx.beginPath();ctx.moveTo(ts*(fx-.09),base);ctx.quadraticCurveTo(ts*(fx+lean*.5),base-ts*h*.6,ts*(fx+lean),base-ts*h);ctx.quadraticCurveTo(ts*(fx+.03),base-ts*h*.5,ts*(fx+.09),base);ctx.closePath();ctx.fill();}});
+ ctx.save();if(local)ctx.globalAlpha=.5;blitCell(c,x,y);ctx.restore();
+}
 function destroySoft(x,y){
  if(!inb(x,y)||G.grid[y][x]!==2)return false;
- G.grid[y][x]=0;G.breakFx.push({x,y,t:0});const hid=G.hidden?.get(key(x,y));if(hid){G.hidden.delete(key(x,y));addItem(x,y,hid);}else dropItem(x,y);invalidateDanger();
+ G.grid[y][x]=0;if(G.push)delete G.push[key(x,y)];G.breakFx.push({x,y,t:0});const hid=G.hidden?.get(key(x,y));if(hid){G.hidden.delete(key(x,y));addItem(x,y,hid);}else dropItem(x,y);invalidateDanger();
  spark(x+.5,y+.5,7,G.theme.sTop,{sp:3.6,life:520,r:.1,up:2.2,g:11,sq:true});return true;
 }
 function stepBombs(ms){for(const b of G.bombs)b.t+=ms;const pending=G.bombs.filter(b=>b.t>=CFG.FUSE),done=new Set(),broken=new Map(),waves=[];if(!pending.length)return;const snapshot=G.grid.map(r=>r.slice());for(let i=0;i<pending.length;i++){const b=pending[i];if(done.has(b))continue;done.add(b);const cells=blastCells(b,snapshot);waves.push({cells,t:0,hit:new Set(),owner:b.owner});for(const c of cells){if(snapshot[c.y][c.x]===2)broken.set(key(c.x,c.y),[c.x,c.y]);for(const other of G.bombs)if(other.x===c.x&&other.y===c.y&&!done.has(other))pending.push(other);}}
@@ -1006,8 +1072,8 @@ const AI_CFG={
  rookie:{tick:420,notice:720,react:1.25,chain:false,room:1,aggro:.08,hunt:4, lead:0,tactics:0,gap:2000,burst:.34,greed:4, slip:.16,farmSmart:.2, needleDelay:1800,alert:0,guard:0,reach:2,lapse:[5000,9000,1400,900]},
  easy:  {tick:300,notice:540,react:1.4, chain:true, room:2,aggro:.28,hunt:7, lead:0,tactics:1,gap:1700,burst:.5, greed:6, slip:.08,farmSmart:.5, needleDelay:1100,alert:0,guard:0,reach:3,lapse:[8000,14000,1000,700]},
  normal:{tick:200,notice:250,react:1.85,chain:true, room:2,aggro:.62,hunt:10,lead:1,tactics:2,gap:1300,burst:.7, greed:8, slip:0,  farmSmart:.8, needleDelay:600,alert:0,guard:1,lapse:[14000,22000,700,500]},
- hard:  {tick:130,notice:110,react:2.2, chain:true, room:3,aggro:.85,hunt:16,lead:1,tactics:3,gap:900, burst:.85,greed:10,slip:0,  farmSmart:1,  needleDelay:300,alert:0,guard:1,lapse:[22000,34000,500,350]},
- master:{tick:80, notice:0,  react:2.6, chain:true, room:3,aggro:1,  hunt:30,lead:2,tactics:4,gap:620, burst:1,  greed:12,slip:0,  farmSmart:1,  needleDelay:150,alert:0,guard:1,lapse:[40000,60000,300,200]}
+ hard:  {tick:130,notice:110,react:2.2, chain:true, room:3,aggro:.85,hunt:16,lead:1,tactics:3,gap:900, burst:.85,greed:10,slip:0,  farmSmart:1,  needleDelay:300,alert:0,guard:1,lapse:[32000,50000,350,250]},
+ master:{tick:60, notice:0,  react:3.0, chain:true, room:4,aggro:1,  hunt:30,lead:2,tactics:4,gap:560, burst:1,  greed:13,slip:0,  farmSmart:1,  needleDelay:120,alert:1,alertMs:1200,guard:1,lapse:null}
 };
 /* 크아 협공배틀 상위 봇처럼, 높은 난이도는 소지 아이템을 들고 시작한다(죽어도 떨구지 않음). */
 const BOT_KIT={hard:{needles:1,shields:0},master:{needles:1,shields:1}};
@@ -1207,6 +1273,21 @@ function attackRoute(e,target,h,c){
  for(const {p} of scored.slice(0,6)){const hyp={...e,px:p.x,py:p.y,segment:null};if(escapeExists(hyp,p.x,p.y,1)&&!(c.guard&&exposed(e,p.x,p.y)))return p;}
  return null;
 }
+
+/* 봇이 풀숲에 숨은 상대를 보는 법: 바로 옆이 아니면 마지막으로 본 칸을 쫓는다. */
+function seenCell(e,t){const c=cellOf(t),[x,y]=cellOf(e);e.lastSeen=e.lastSeen||{};
+ const hid=G.bush?.[key(c[0],c[1])]&&!t.trapped&&Math.abs(c[0]-x)+Math.abs(c[1]-y)>1;
+ if(!hid){e.lastSeen[t.id]=c;return c;}return e.lastSeen[t.id]||c;}
+/* 봇이 상자를 미는 경우: 상대 쪽으로 가는 방향이고, 밀고 들어갈 칸이 안전할 때. 난이도가 높을수록 자주. */
+function botPushDir(e,x,y,tc,h,c){
+ if(!G.push||!tc||e.ride&&false)return null;if(Math.random()>(c.tactics>=3?.55:c.tactics>=1?.3:.12))return null;
+ const d0=Math.abs(x-tc[0])+Math.abs(y-tc[1]);if(d0<=1)return null;
+ for(const [dir,dx,dy]of DIR4){const tx=x+dx,ty=y+dy,nx=tx+dx,ny=ty+dy;
+  if(!inb(nx,ny)||!G.push[key(tx,ty)]||G.grid[ty][tx]!==2||G.grid[ny][nx]!==0||G.bush[key(nx,ny)]||bombAt(nx,ny))continue;
+  if(Math.abs(tx-tc[0])+Math.abs(ty-tc[1])>=d0)continue;
+  if(!safeInterval(h,x,y,0,CFG.PUSH_MS+300)||!safeInterval(h,tx,ty,0,1600))continue;
+  return dir;}
+ return null;}
 function chooseTarget(e,foes){
  const old=foes.find(f=>f.id===e.targetId);if(old&&G.t<e.targetUntil)return old;
  const [x,y]=cellOf(e),style=personaOf(e).id,dist=new Map([[key(x,y),0]]),q=[[x,y]];
@@ -1401,8 +1482,8 @@ function followPlan(e,h,c,ctx){
 function choosePlan(e,h,c,ctx){
  const {x,y,target,tc,canBomb,safeBomb,drop,mate,early,late}=ctx,cands=[];
  const back=p=>p&&p.dir&&p.dir===OPP[e.dir]?1.2:0,distT=target?Math.abs(x-tc[0])+Math.abs(y-tc[1]):99;
- const need=late>.5?0:farmNeed(e),item=bestItemRoute(e,h,c.greed+(early?2:0)+Math.round(need*4));
- if(item){const it=G.items.find(i=>i.x===item.x&&i.y===item.y);if(it)cands.push({kind:"item",p:item,score:2.5+itemUtility(e,it)*.22+need*7-eta(e,item)*.45-back(item),until:4500});}
+ const need=late>.85?0:farmNeed(e)*(1-late*.5),item=bestItemRoute(e,h,c.greed+(early?2:0)+Math.round(need*4)-(late>.5?4:0));
+ if(item){const it=G.items.find(i=>i.x===item.x&&i.y===item.y);if(it)cands.push({kind:"item",p:item,score:4+itemUtility(e,it)*.35+need*9-eta(e,item)*.45-back(item),until:4500});}
  if(target&&distT<=c.hunt+late*14){
   const aggroNow=Math.min(1.3,c.aggro*(early&&distT>4?.45:1)*(1-need*.55)+late*.45);
   // 물풍선이 없으면 사거리 자리로 뛰어가 봐야 할 게 없다(가서 왔다갔다만 한다). 그땐 거리만 좁힌다.
@@ -1442,7 +1523,8 @@ function aiThink(e){
  // 3) 갇힌 적 마무리
  const fin=finishRoute(e,h,c);
  if(fin){e.plan=null;setDir(e,fin.dir);e.supportIntent="마무리 접근";return;}
- const target=chooseTarget(e,active),tc=target?cellOf(target):null;
+ const target=chooseTarget(e,active),tc=target?seenCell(e,target):null;
+ const pd=botPushDir(e,x,y,tc,h,c);if(pd){e.plan=null;setDir(e,pd);e.supportIntent="상자 밀기";return;}
  const usable=Math.max(1,Math.round(bombCapOf(e)*c.burst)),gapNow=Math.max(c.gap,mate?650:0),sinceBomb=G.t-(e.lastBombAt??-Infinity);
  const canBomb=activeBombs(e)<usable&&!bombAt(x,y)&&G.grid[y][x]===0&&sinceBomb>=gapNow;
  const careless=c.slip>0&&Math.random()<c.slip,ready=canBomb?0:bombReadyIn(e,c,mate);
@@ -1903,8 +1985,8 @@ function drawBlockMark(x,y,hard){
  else{ctx.strokeStyle="#79521d";ctx.lineWidth=Math.max(1,u*.025);ctx.beginPath();ctx.moveTo(cx-u*.022,cy-u*.04);ctx.lineTo(cx,cy-u*.065);ctx.lineTo(cx,cy+u*.065);ctx.moveTo(cx-u*.037,cy+u*.065);ctx.lineTo(cx+u*.037,cy+u*.065);ctx.stroke();}
  ctx.restore();
 }
-function drawHard(x,y,th){const mark=interior(x,y);blitCell(cellSprite("h"+G.mapIdx+(mark?"m":""),()=>{drawHardArt(0,0,th);if(mark)drawBlockMark(0,0,true);}),x,y);}
-function drawSoft(x,y,th,v){blitCell(cellSprite("s"+G.mapIdx+"_"+v,()=>{drawSoftArt(0,0,th,v);drawBlockMark(0,0,false);}),x,y);}
+function drawHard(x,y,th){const mark=interior(x,y);blitCell(cellSprite("h"+G.mapIdx+(mark?"m":""),()=>{drawHardArt(0,0,th);}),x,y);}
+function drawSoft(x,y,th,v){if(G.push?.[key(x,y)]){blitCell(cellSprite("pb"+G.mapIdx,()=>drawPushArt(0,0,th)),x,y);return;}blitCell(cellSprite("s"+G.mapIdx+"_"+v,()=>{drawSoftArt(0,0,th,v);}),x,y);}
 function drawBreakFx(){for(const f of G.breakFx){const k=f.t/300;ctx.save();ctx.globalAlpha=1-k;ctx.strokeStyle="#ffe4a2";ctx.lineWidth=Math.max(1,ts*.05);rrect((f.x+.08-k*.08)*ts,(f.y+.08-k*.08)*ts,ts*(.84+k*.16),ts*(.84+k*.16),ts*.1);ctx.stroke();ctx.restore();}}
 
 function drawHardArt(x,y,th){const px=x*ts,py=y*ts,m=ts*.025,rise=ts*.24,bx=px+m,by=py-rise+m,bw=ts-2*m,bh=ts-2*m+rise,top=bh-rise-ts*.05;ctx.fillStyle=th.hSide;rrect(bx,by,bw,bh,ts*.15);ctx.fill();ink();const face=ctx.createLinearGradient(bx,by,bx+bw,by+top);face.addColorStop(0,shade(th.hTop,18));face.addColorStop(.48,th.hTop);face.addColorStop(1,shade(th.hTop,-10));ctx.fillStyle=face;rrect(bx,by,bw,top,ts*.14);ctx.fill();const cx=bx+bw/2,cy=by+top/2;
@@ -2012,8 +2094,8 @@ function drawChar(e){
  const cx=(e.px+.5)*ts,cy=(e.py+.5)*ts,moving=!e.trapped&&(e.human?!!e.inDir:!!e.segment),tick=reducedMotion?0:G.visualT,stepv=moving?Math.sin(tick/95):0;
  const bob=e.ride?-rideBob(moving):e.trapped?Math.sin(tick/220)*ts*.025:moving?Math.abs(stepv)*ts*.04:Math.sin(tick/620)*ts*.012;
  ctx.save();if(e.invuln>0&&Math.floor(G.visualT/90)%2===0)ctx.globalAlpha=.48;
- ellipse(cx,cy+ts*.35,ts*(e.ride?.36:.29),ts*.09,"#12395635");if(e.ride)drawRide(e,cx,cy,moving);
- const w=ts*(e.ride?.90:.94),h=w*148/120,top=cy-ts*(e.ride?.85:.76)-bob;
+ ellipse(cx,cy+ts*.36,ts*(e.ride?.38:.33),ts*.11,"#0a1a3066");if(e.ride)drawRide(e,cx,cy,moving);
+ const w=ts*(e.ride?1.0:1.1),h=w*148/120,top=cy-ts*(e.ride?.98:.94)-bob;
  ctx.save();ctx.translate(cx,top+h*.75);ctx.rotate(moving&&!e.ride?stepv*.032:0);
  // Use the entire SVG; viewBox coordinates are not source-image pixel coordinates.
  ctx.drawImage(avatarBitmap(e.char+":"+e.dir+(e.ride?":ride":""),im,w,h)||im,-w/2,-h*.75,w,h);ctx.restore();
@@ -2069,7 +2151,7 @@ function drawLabels(){
   used.push({x,y,w,h:tip-y});
  }
  // 2) 봇·다른 컴퓨터 친구: 작은 번호표
- for(const e of actors){if(slotTag(e))continue;
+ for(const e of actors){if(slotTag(e)||hiddenInBush(e))continue;
   const n="P"+playerNo(e),name=(e.human?n+" 친구":n)+(e.trapped?" "+Math.max(0,e.trapT/1000).toFixed(1):""),font=Math.max(8,Math.min(11,ts*.27));
   ctx.font=`800 ${font}px system-ui,'Apple SD Gothic Neo',sans-serif`;const w=ctx.measureText(name).width+10,h=font+5,x=Math.max(2,Math.min(CFG.COLS*ts-w-2,(e.px+.5)*ts-w/2));let y=Math.max(2,(e.py-.36)*ts-h-(e.ride?ts*.12:0));
   for(let i=0;i<3;i++){if(!used.some(r=>x<r.x+r.w&&x+w>r.x&&y<r.y+r.h&&y+h>r.y))break;y=Math.max(2,y-h-2);}used.push({x,y,w,h});
@@ -2114,7 +2196,7 @@ function drawZoneWarning(){
 }
 function draw(){if(!G)return;ctx.save();if(G.shake>0)ctx.translate((Math.random()-.5)*G.shake,(Math.random()-.5)*G.shake);ctx.clearRect(-40,-40,CFG.COLS*ts+80,CFG.ROWS*ts+80);drawFloor();if(G.mode==="stage")drawBlastPreview();const rows=Array.from({length:CFG.ROWS},()=>({items:[],bombs:[],blasts:[],actors:[]}));for(const it of G.items)if(inb(it.x,it.y))rows[it.y].items.push(it);for(const b of G.bombs)if(inb(b.x,b.y))rows[b.y].bombs.push(b);for(const b of G.blasts)for(const c of b.cells)if(inb(c.x,c.y))rows[c.y].blasts.push([b,c]);for(const a of [...G.ents,...G.mobs,...(G.boss?[G.boss]:[])])if(a.alive)rows[Math.max(0,Math.min(CFG.ROWS-1,Math.round(a.py)))].actors.push(a);
  if(G.wallPending){const p=G.wallPending;ctx.fillStyle=Math.floor(G.visualT/110)%2?"#ff3954b0":"#ff395469";ctx.fillRect(p.x*ts,p.y*ts,ts,ts);ctx.strokeStyle="#fff4f6";ctx.lineWidth=2;ctx.strokeRect(p.x*ts+2,p.y*ts+2,ts-4,ts-4);}
- for(let y=0;y<CFG.ROWS;y++){for(const [bl,c]of rows[y].blasts)drawBlastCell(bl,c);for(const a of rows[y].actors)if(!a.mob)drawTeamRing(a);for(const it of rows[y].items)drawItem(it);for(const b of rows[y].bombs)drawBomb(b);for(let x=0;x<CFG.COLS;x++){if(G.grid[y][x]===1)drawHard(x,y,G.theme);else if(G.grid[y][x]===2)drawSoft(x,y,G.theme,G.deco[y][x]);}rows[y].actors.sort((a,b)=>a.py-b.py);for(const a of rows[y].actors)a.id==="boss"?drawBoss(a):a.mob?drawMob(a):drawChar(a);}
+ for(let y=0;y<CFG.ROWS;y++){for(const [bl,c]of rows[y].blasts)drawBlastCell(bl,c);for(const a of rows[y].actors)if(!a.mob&&!hiddenInBush(a))drawTeamRing(a);for(const it of rows[y].items)drawItem(it);for(const b of rows[y].bombs)drawBomb(b);for(let x=0;x<CFG.COLS;x++){if(G.grid[y][x]===1)drawHard(x,y,G.theme);else if(G.grid[y][x]===2)drawSoft(x,y,G.theme,G.deco[y][x]);}rows[y].actors.sort((a,b)=>a.py-b.py);for(const a of rows[y].actors)a.id==="boss"?drawBoss(a):a.mob?drawMob(a):hiddenInBush(a)?0:drawChar(a);if(G.bush)for(let x=0;x<CFG.COLS;x++)if(G.bush[key(x,y)]&&G.grid[y][x]===0)drawBush(x,y);}
  for(const s of G.shots){ellipse((s.x+.5)*ts,(s.y+.5)*ts,ts*.3,ts*.3,"#78cdfa80");ellipse((s.x+.5)*ts,(s.y+.5)*ts,ts*.21,ts*.21,"#dff7ff");}for(const f of G.falls)drawFall(f);for(const f of G.wallFx){const k=f.t/320;ctx.save();ctx.globalAlpha=1-k;ctx.strokeStyle="white";ctx.lineWidth=Math.max(2,ts*.1);rrect((f.x-k*.4)*ts,(f.y-k*.4)*ts,ts*(1+k*.8),ts*(1+k*.8),ts*.2);ctx.stroke();ctx.restore();}drawBreakFx();drawZoneWarning();drawStageFx();drawParts();drawLabels();drawFloats();ctx.restore();if(G.boss?.alive)drawBossBar();if(G.intro>0)drawIntro();else if(G.over)drawRoundBanner();}
 
 /* 레이아웃: 터치 모드에서만 조작 공간을 예약. 작은 높이에도 캔버스를 강제로 키우지 않는다. */
