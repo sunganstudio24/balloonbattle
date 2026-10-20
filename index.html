@@ -576,8 +576,9 @@ const DIR4=[["up",0,-1],["down",0,1],["left",-1,0],["right",1,0]],DV=Object.from
 const SPAWNS=[[1,1],[13,11],[13,1],[1,11]],TEAM_SPAWNS=[[1,1],[1,11],[13,1],[13,11]];
 /* 시작 칸 4곳은 그대로 두고, 누가 어느 칸에 서는지만 매 라운드 섞는다.
    2인전은 대각선 끝끼리, 팀전은 같은 팀이 한쪽 변(좌·우·위·아래 중 하나)을 나눠 쓴다. */
+let spawnMap=0;
 function pickSpawns(form,count,teams=[]){
- const R=CFG.COLS-2,B=CFG.ROWS-2,[mx,my]=boardCenter(),TL=[1,1],TR=[R,1],BL=[1,B],BR=[R,B],TM=[mx,1],BM=[mx,B],LM=[1,my],RM=[R,my];
+ const R=CFG.COLS-2,B=CFG.ROWS-2,[cx,cy]=boardCenter(),off=MAPS[spawnMap]?.lay==="village"?2:0,TL=[1,1],TR=[R,1],BL=[1,B],BR=[R,B],TM=[cx-off,1],BM=[cx+off,B],LM=[1,cy+off],RM=[R,cy-off];
  if(form==="stage")return [TL];
  if(form==="team"){
   // 같은 팀은 한쪽 변에 모인다. 한 팀이 넘치면 남는 사람은 반대쪽 빈 칸으로. 5명 이상이면 변 가운데 자리도 쓴다.
@@ -622,15 +623,17 @@ function pillarAt(i,x,y,W=CFG.COLS,H=CFG.ROWS){const L=MAPS[i]?.lay,cx=(W-1)>>1,
 function flood(g,sx,sy){const seen=new Set([key(sx,sy)]),q=[[sx,sy]];for(let i=0;i<q.length;i++)for(const [,dx,dy]of DIR4){const x=q[i][0]+dx,y=q[i][1]+dy;if(inb(x,y)&&g[y][x]!==1&&!seen.has(key(x,y))){seen.add(key(x,y));q.push([x,y]);}}return seen;}
 function ensureConnected(g){for(let n=0;n<CFG.COLS*CFG.ROWS;n++){const seen=flood(g,1,1);let bad=null;for(let y=1;y<CFG.ROWS-1&&!bad;y++)for(let x=1;x<CFG.COLS-1;x++)if(g[y][x]!==1&&!seen.has(key(x,y))){bad=[x,y];break;}if(!bad)return;let opened=false;for(let y=1;y<CFG.ROWS-1&&!opened;y++)for(let x=1;x<CFG.COLS-1;x++){if(g[y][x]!==1)continue;const nb=DIR4.map(d=>[x+d[1],y+d[2]]).filter(p=>inb(...p)&&g[p[1]][p[0]]!==1);if(nb.some(p=>seen.has(key(...p)))&&nb.some(p=>!seen.has(key(...p)))){g[y][x]=0;opened=true;break;}}if(!opened){let [x,y]=bad;while(x>1){g[y][--x]=0;}while(y>1){g[--y][x]=0;}}}}
 function buildGrid(i,spawns,dens=null){
- const m=MAPS[i],g=grid(0),safe=new Set(),sectors=Array.from({length:6},()=>[]);
+ const m=MAPS[i],g=grid(0),safe=new Set(),barricade=[],sectors=Array.from({length:6},()=>[]);
  for(let y=0;y<CFG.ROWS;y++)for(let x=0;x<CFG.COLS;x++){
-  g[y][x]=!interior(x,y)?1:pillarAt(i,x,y)&&Math.random()>m.holes?1:0;if(roadAt(i,x,y))safe.add(key(x,y));
+  g[y][x]=!interior(x,y)?1:pillarAt(i,x,y)&&Math.random()>m.holes?1:0;if(roadAt(i,x,y)){const [cx,cy]=boardCenter(),d=Math.max(Math.abs(x-cx),Math.abs(y-cy));if(d>1&&d%3===0)barricade.push([x,y]);else safe.add(key(x,y));}
   // Keep two exits and a turning pocket at every spawn, including power-2 starts.
   if(interior(x,y)&&spawns.some(p=>Math.abs(p[0]-x)+Math.abs(p[1]-y)<=2)){
    safe.add(key(x,y));g[y][x]=0;
   }
  }
  ensureConnected(g);
+ /* 마을 도로: 끝까지 뻥 뚫리면 8인전에서 양 끝 사람이 시작부터 마주 보므로, 몇 칸마다 깰 수 있는 바리케이드를 둔다. */
+ for(const [x,y]of barricade)if(g[y][x]===0&&!spawns.some(p=>Math.abs(p[0]-x)+Math.abs(p[1]-y)<=2))g[y][x]=2;
  for(let y=1;y<CFG.ROWS-1;y++)for(let x=1;x<CFG.COLS-1;x++)
   if(g[y][x]===0&&!safe.has(key(x,y)))sectors[zoneOf(x,y)].push([x,y]);
  // Each part of the arena gets its share; a bad random roll cannot empty one side.
@@ -703,7 +706,7 @@ function startGame(){
  scoreboardKey="";newRound();
 }
 
-function newRound(carry=null,title=null,sub=null){setBoard(...boardFor(MATCH.mode,MATCH.players.length));scheduleResize();const mode=MATCH.mode,form=MATCH.form,stage=MATCH.stage,count=MATCH.players.length,spawns=pickSpawns(form,count,MATCH.players.map(p=>p.team)),picks=MATCH.players.map(p=>p.char),idx=mode==="stage"?stageMapIdx(stage):sel.map<0?MATCH.maps[(MATCH.round-1)%MATCH.maps.length]:sel.map;
+function newRound(carry=null,title=null,sub=null){setBoard(...boardFor(MATCH.mode,MATCH.players.length));scheduleResize();const mode=MATCH.mode,form=MATCH.form,stage=MATCH.stage,count=MATCH.players.length,idx=mode==="stage"?stageMapIdx(stage):sel.map<0?MATCH.maps[(MATCH.round-1)%MATCH.maps.length]:sel.map,spawns=(spawnMap=idx,pickSpawns(form,count,MATCH.players.map(p=>p.team))),picks=MATCH.players.map(p=>p.char);
  if(mode==="stage"&&sub==null)sub=stageIntroSub(stage);const introMs=title?(mode==="stage"&&sub?2600:2100):mode==="stage"?2300:1300;
  const ents=spawns.map((p,i)=>makeEntity("e"+i,...p,picks[i],!MATCH.players[i].human));ents.forEach((e,i)=>{const pl=MATCH.players[i];e.team=form==="ffa"?i:form==="team"?pl.team:pl.human?0:1;e.ctl=pl.ctl;e.netId=pl.netId;e.seat=pl.seat||0;if(e.isBot){e.diff=pl.diff;e.persona=pl.persona;const kit=BOT_KIT[e.diff];if(kit&&MATCH.mode==="battle"){e.needles=Math.max(e.needles,kit.needles);e.base.needles=e.needles;e.shields=Math.max(e.shields||0,kit.shields);}}});if(carry)Object.assign(ents[0],carry);
  G={rid:++roundSeq,cols:CFG.COLS,rows:CFG.ROWS,mode,form,stage,round:MATCH.round,mapIdx:idx,intro:introMs,introMax:introMs,introTitle:title,introSub:sub,grid:buildGrid(idx,spawns,mode==="stage"?stageDensity(stage):null),deco:grid(()=>Math.random()<.24?1:0),theme:MAPS[idx],ents,me:ents[0],mobs:[],mobSeq:0,falls:[],wallFx:[],breakFx:[],parts:[],freeze:0,boss:null,shots:[],isBoss:mode==="stage"&&stageInfo(stage).boss,warns:[],eggs:[],respawnT:0,stallHint:false,spiral:spiralCells(),wallPending:null,zoneOrder:[],zoneIdx:0,zoneQueue:[],zoneDeferred:[],zoneNextAt:CFG.ZONE_START,zoneOn:false,zoneAlert:false,zoneSfx:0,zoneWalls:null,zoneMain:0,sudden:false,suddenIdle:0,suddenAlive:0,finishReason:null,idleT:0,stallT:0,stalled:false,hunt:false,bombs:[],blasts:[],items:[],floats:[],bag:[],skyBag:[],zones:new Array(6).fill(0),skyT:CFG.SKY_FIRST,skyGap:CFG.SKY_EVERY,t:0,roundMs:0,visualT:0,over:false,winner:null,winnerId:null,winnerIds:[],roundScored:false,endDelay:0,shake:0,dangerCache:{},reward:false};
