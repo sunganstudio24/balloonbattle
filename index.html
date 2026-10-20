@@ -379,6 +379,7 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
 #hud{background:linear-gradient(180deg,#2d64b8,#173a78)!important;border:3px solid #ffd84d!important;border-radius:18px!important;box-shadow:0 5px 0 #0b2550,inset 0 0 0 2px #5f97e6!important;color:#fff}
 #hud .rail-heading{color:#fff;text-shadow:0 2px 0 #0b2550;letter-spacing:.5px}
 #hud .rail-heading small,#hud .subvalue,#hud .rail-label span{display:none!important}
+#app:not(.touch) #hud .value{font-size:20px}
 #app:not(.touch) #hud .rail-label{color:#ffe45c;text-shadow:0 1px 0 #0b2550;font-weight:900}
 #hud .member{background:#123a78!important;border:2px solid #5d8fdc!important;border-bottom-width:4px!important;border-radius:14px!important;color:#fff!important}
 #hud .member.enemy{border-color:#ff7f8e!important}
@@ -387,10 +388,23 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
 #hud .stat,#hud .islot{background:radial-gradient(circle at 50% 30%,#4b86d6,#22498a)!important;border:2px solid #9cc8ff!important;border-bottom:4px solid #0d2a58!important;border-radius:14px!important;color:#fff!important}
 #hud .islot.auto{background:radial-gradient(circle at 50% 30%,#d5a420,#8a6208)!important;border-color:#ffe28a!important}
 #hud .islot.empty{opacity:.75;filter:saturate(.5)}
-#hud .stat .value,#hud .islot .value{color:#ffe45c!important;font-size:20px;text-shadow:0 2px 0 #0b2550}
+#hud .stat .value,#hud .islot .value{color:#ffe45c!important;text-shadow:0 2px 0 #0b2550}
 #hud .stat .label,#hud .islot .label{color:#e8f2ff}
 #hud #stateLine,#hud #stateLine *{color:#e6f0ff!important;opacity:1!important;}#hud #stateLine{border-color:#4c7cc4!important}
 #hud #stateLine.urgent{color:#ffcf5c!important}
+
+/* 폰·태블릿(터치): 정보 패널은 얇은 띠로, 남는 공간은 전부 맵에 */
+#app.touch #hud{padding:4px 8px!important;border-width:2px!important;border-radius:0 0 12px 12px!important;box-shadow:0 3px 0 #0b2550!important}
+#app.touch #hud #roster,#app.touch #hud .rail-heading,#app.touch #hud .rail-label,#app.touch #hud .hud-section:nth-child(2),#app.touch #hud .subvalue{display:none!important}
+#app.touch #hud .hudgrid{display:block!important}
+#app.touch #hud .grp{display:flex!important;gap:6px!important}
+#app.touch #hud .stat{flex:1;min-height:0!important;flex-direction:row!important;gap:6px!important;padding:3px 6px!important;border-width:1.5px!important;border-bottom-width:3px!important;border-radius:10px!important}
+#app.touch #hud .stat .label{font-size:0!important;gap:0!important}
+#app.touch #hud .stat .ico{width:18px!important;height:18px!important}
+#app.touch #hud .stat .value{font-size:15px!important}
+#app.touch #hud #stateLine:not(.urgent){display:none!important}
+#app.touch #hud #stateLine.urgent{font-size:11px!important;margin-top:3px!important;padding:0!important;border:0!important}
+#app.touch #stage{padding:4px!important}
 </style>
 </head>
 <body>
