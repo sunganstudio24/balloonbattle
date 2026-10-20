@@ -543,7 +543,8 @@ const RIDES={
 const PLAYER_COLORS=["#63c9ff","#ff91a4","#ffc956","#bba1ff","#6fdc8c","#ff9f5a","#f27ad8","#b9c4d6"];
 /* 최대 인원과 인원별 맵 크기. 기둥 배치가 맞으려면 가로·세로 모두 홀수여야 한다. */
 const MAX_PLAYERS=8;
-function boardFor(mode,count){return mode==="stage"?[15,13]:count<=2?[15,13]:count<=4?[17,15]:[21,17];}
+const BOARD_BY_COUNT={2:[15,13],3:[17,13],4:[17,15],5:[19,15],6:[19,17],7:[21,17],8:[23,17]};
+function boardFor(mode,count){return mode==="stage"?[15,13]:BOARD_BY_COUNT[Math.max(2,Math.min(8,count))];}
 function setBoard(c,r){CFG.COLS=c;CFG.ROWS=r;CFG.ZONE_DEPTH=4+Math.floor((Math.min(c,r)-13)/2);}
 function boardCenter(){return [(CFG.COLS-1)>>1,(CFG.ROWS-1)>>1];}
 function playerNo(e){return Number(e.id.slice(1))+1;}
