@@ -395,16 +395,42 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
 
 /* 폰·태블릿(터치): 정보 패널은 얇은 띠로, 남는 공간은 전부 맵에 */
 #app.touch #hud{padding:4px 8px!important;border-width:2px!important;border-radius:0 0 12px 12px!important;box-shadow:0 3px 0 #0b2550!important}
-#app.touch #hud #roster,#app.touch #hud .rail-heading,#app.touch #hud .rail-label,#app.touch #hud .hud-section:nth-child(2),#app.touch #hud .subvalue{display:none!important}
+#app.touch #hud #roster,#app.touch #hud .rail-heading,#app.touch #hud .rail-label,#app.touch #hud .hud-section:has(.grp.items),#app.touch #hud .grp.items,#app.touch #hud .subvalue{display:none!important}
 #app.touch #hud .hudgrid{display:block!important}
 #app.touch #hud .grp{display:flex!important;gap:6px!important}
 #app.touch #hud .stat{flex:1;min-height:0!important;flex-direction:row!important;gap:6px!important;padding:3px 6px!important;border-width:1.5px!important;border-bottom-width:3px!important;border-radius:10px!important}
 #app.touch #hud .stat .label{font-size:0!important;gap:0!important}
 #app.touch #hud .stat .ico{width:18px!important;height:18px!important}
 #app.touch #hud .stat .value{font-size:15px!important}
-#app.touch #hud #stateLine:not(.urgent){display:none!important}
+#app.touch #hud #stateLine{display:none!important}
 #app.touch #hud #stateLine.urgent{font-size:11px!important;margin-top:3px!important;padding:0!important;border:0!important}
 #app.touch #stage{padding:4px!important}
+
+#app.touch #hud .stat .ico{display:inline-block!important;flex:none}
+#app.touch #hud .stat .label{display:flex!important}
+/* 폰 상단: 점수·시간·버튼을 한 줄로, 버튼은 아이콘만 */
+#app.touch #playTop{display:flex!important;flex-wrap:nowrap!important;align-items:center;gap:6px;padding:4px 8px!important;min-height:0!important}
+#app.touch #playTop[hidden]{display:none!important}
+#app.touch #playTop .play-brand{display:none!important}
+#app.touch #playTop .match-meta,#app.touch #playTop #scoreStat{display:flex!important;flex-wrap:nowrap!important;align-items:center;gap:6px;flex:1;min-width:0;white-space:nowrap}
+#app.touch #playTop .match-map{display:none!important}
+#app.touch #playTop .top-actions{flex:none;gap:4px!important}
+#app.touch #playTop .smallbtn{font-size:0!important;padding:7px 9px!important;min-height:0!important}
+#app.touch #playTop .smallbtn .ui-icon{width:18px!important;height:18px!important;margin:0!important}
+/* 폰 메뉴: 1열, 가로 넘침 없음, 키보드 전용 '둘이 하기'는 숨김 */
+html.phone,html.phone body{overflow-x:hidden}
+html.phone #menu,html.phone #menu .sbody,html.phone .lobby2{max-width:100vw!important;min-width:0!important;overflow-x:hidden;box-sizing:border-box}
+html.phone .entry-grid{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+html.phone .entry.e-two{display:none!important}
+html.phone .entry{min-height:0!important;padding:14px 16px!important}
+html.phone .entry-hero{overflow:hidden!important;max-width:100%}
+html.phone #menu *{max-width:100%;box-sizing:border-box}
+html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{flex-wrap:wrap!important}
+/* 첫 판 안내 */
+#tipCard{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:99;background:#173a78f0;border:3px solid #ffd84d;border-radius:18px;padding:14px 18px;color:#fff;font:800 15px/1.5 system-ui,'Apple SD Gothic Neo',sans-serif;box-shadow:0 6px 0 #0b2550;width:min(86vw,360px);word-break:keep-all;pointer-events:auto}
+#tipCard b{color:#ffe45c}#tipCard div{display:flex;align-items:center;gap:10px;margin:6px 0}#tipCard i{font-style:normal;font-size:22px;width:30px;text-align:center}
+@media (orientation:landscape){#tipCard{font-size:12px;padding:8px 14px;width:min(56vw,340px)}#tipCard i{font-size:16px}#tipCard div{margin:2px 0}}
+#tipCard small{display:block;text-align:center;opacity:.75;margin-top:6px;font-weight:600}
 </style>
 </head>
 <body>
@@ -800,9 +826,9 @@ function newRound(carry=null,title=null,sub=null){setBoard(...boardFor(MATCH.mod
  G.push={};G.bush={};if(mode!=="stage")decorateGrid(spawns);
  /* 드랍률: 블록 수와 인원에 맞춰 한 사람당 아이템이 7개쯤 나오게(0.34~0.55). 맵이 커지거나 인원이 늘어도 템이 모자라지 않게. */
  {const soft=G.grid.flat().filter(v=>v===2).length;G.dropRate=Math.max(.34,Math.min(.55,7*ents.length/Math.max(1,soft)));}
- buildZone();if(mode==="stage"){MATCH.stageCarry=carry?{...carry}:null;spawnStage(stage);}ffOn=false;enterPlayUI();}
+ buildZone();setTimeout(showTip,300);if(mode==="stage"){MATCH.stageCarry=carry?{...carry}:null;spawnStage(stage);}ffOn=false;enterPlayUI();}
 /* 게임 화면으로 전환. 온라인 참가자는 호스트가 보낸 라운드를 받을 때 이 함수만 호출한다. */
-function enterPlayUI(){phase="play";clearInputs();lockBackground(false);$("menu").classList.add("hide");$("room").classList.add("hide");$("result").classList.add("hide");$("overlay").classList.add("hide");$("hud").hidden=false;playChrome(true);$("app").inert=false;touchMode=sel.ctrl==="touch"||(sel.ctrl==="auto"&&isTouch());$("ctrl").hidden=!touchMode;$("keyHint").classList.toggle("on",!touchMode||splitKeys());$("keyHint").innerHTML=splitKeys()?KEYHINT_LOCAL:KEYHINT_ONE;last=performance.now();buildRoster();sizeCtrl();resize();updateHud();requestAnimationFrame(resize);if(document.activeElement instanceof HTMLElement)document.activeElement.blur();}
+function enterPlayUI(){phase="play";clearInputs();lockBackground(false);$("menu").classList.add("hide");$("room").classList.add("hide");$("result").classList.add("hide");$("overlay").classList.add("hide");$("hud").hidden=false;playChrome(true);$("app").inert=false;touchMode=sel.ctrl==="touch"||isPhone()||(sel.ctrl==="auto"&&isTouch());$("ctrl").hidden=!touchMode;$("keyHint").classList.toggle("on",!touchMode||splitKeys());$("keyHint").innerHTML=splitKeys()?KEYHINT_LOCAL:KEYHINT_ONE;last=performance.now();buildRoster();sizeCtrl();resize();updateHud();requestAnimationFrame(resize);if(document.activeElement instanceof HTMLElement)document.activeElement.blur();}
 function makeMob(x,y,type,world=1){const d=MOBS[type]||MOBS[0];return {id:"m"+(++G.mobSeq),mob:true,px:x,py:y,dir:DIR4[Math.random()*4|0][0],type,kind:d.kind,color:d.color,name:d.name,ghost:!!d.ghost,pop:!!d.pop,armor:(d.hp||1)>1,minion:!!d.minion,spd:+(d.spd+(world-1)*.22).toFixed(2),charge:false,windup:0,dashDir:null,dashing:false,rest:0,sleep:0,trapped:false,trapT:0,invuln:0,alive:true,moveDir:null,segment:null};}
 function pocketSize(x,y,cap){const q=[[x,y]];for(let i=0;i<q.length&&q.length<cap;i++)for(const [,dx,dy]of DIR4){const nx=q[i][0]+dx,ny=q[i][1]+dy;if(interior(nx,ny)&&G.grid[ny][nx]===0&&!q.some(p=>p[0]===nx&&p[1]===ny))q.push([nx,ny]);}return Math.min(cap,q.length);}
 function stageDensity(stage){const i=stageInfo(stage);return i.boss?.3:[.42,.48,.54][Math.min(2,i.world-1)];}
@@ -896,6 +922,10 @@ function removeItemAt(x,y){const i=G.items.findIndex(t=>t.x===x&&t.y===y);if(i<0
 /* ── 크아식 지형: 밀리는 블록(나무상자)과 풀숲 ──
    밀리는 블록은 grid=2(깨지는 블록)에 G.push 표시만 얹은 것이라 물줄기·봇 판단은 기존 블록 그대로 따른다.
    풀숲은 grid=0 칸에 G.bush 표시. 지나갈 수 있고, 안에 들어간 캐릭터는 다른 플레이어 화면에서 안 보인다. */
+
+function showTip(){if(!touchMode||G?.mode!=="battle")return;let seen=false;try{seen=localStorage.getItem("bbTip1")==="1";}catch(e){}if(seen||document.getElementById("tipCard"))return;
+ const d=document.createElement("div");d.id="tipCard";d.innerHTML='<div><i>📦</i><span><b>나무상자</b> 붙어서 밀면 밀려요</span></div><div><i>🌿</i><span><b>풀숲</b> 들어가면 상대가 못 봐요</span></div><div><i>🎈</i><span><b>아이템</b> 먹으면 물풍선·물줄기·속도 UP</span></div><div><i>💧</i><span><b>위 숫자</b> 물풍선 개수 · 물줄기 칸 · 속도</span></div><small>화면을 누르면 닫혀요</small>';
+ const close=()=>{d.remove();try{localStorage.setItem("bbTip1","1");}catch(e){}};d.addEventListener("pointerdown",close);document.body.appendChild(d);setTimeout(close,4500);}
 function decorateGrid(spawns){
  const nearSpawn=(x,y,d)=>spawns.some(p=>Math.abs(p[0]-x)+Math.abs(p[1]-y)<=d),forest=G.theme.soft==="tree",
   bushRate=CFG.BUSH_RATE*(forest?1.8:1),soft=[];
@@ -907,7 +937,8 @@ function decorateGrid(spawns){
   for(const [,dx,dy]of shuffle(DIR4.slice())){if(made>=nb||Math.random()<.45)continue;const a=x+dx,b=y+dy;if(interior(a,b)&&G.grid[b][a]===2&&!nearSpawn(a,b,3)&&!G.hidden?.has(key(a,b))){G.grid[b][a]=0;G.bush[key(a,b)]=1;made++;}}}
  let pm=0;for(const [x,y]of soft){if(pm>=np)break;if(G.grid[y][x]===2){G.push[key(x,y)]=1;pm++;}}
 }
-function hiddenInBush(e){if(!G?.bush||!e||e.trapped||e.mob)return false;const x=Math.round(e.px),y=Math.round(e.py);if(!inb(x,y)||!G.bush[key(x,y)])return false;return !localPlayers().includes(e);}
+let lpCache=null,lpAt=-1;function localCached(){if(lpAt!==G.visualT||!lpCache){lpCache=localPlayers();lpAt=G.visualT;}return lpCache;}
+function hiddenInBush(e){if(!G?.bush||!e||e.trapped||e.mob)return false;const x=Math.round(e.px),y=Math.round(e.py);if(!inb(x,y)||!G.bush[key(x,y)])return false;return !localCached().includes(e);}
 function tryPush(e,dir,dt){
  if(!G.push||e.mob||e.id==="boss"||NET.role==="guest")return;const [dx,dy]=DV[dir],cx=Math.round(e.px),cy=Math.round(e.py);
  const tx=cx+dx,ty=cy+dy,nx=tx+dx,ny=ty+dy,k=key(tx,ty);
@@ -934,7 +965,7 @@ function drawPushArt(x,y,th){
  for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(c+s*a*2.1,t);ctx.lineTo(c+s*a*1.2,t-a*.7);ctx.lineTo(c+s*a*1.2,t+a*.7);ctx.closePath();ctx.fill();}
 }
 function drawBush(x,y){
- const local=localPlayers().some(e=>e.alive&&Math.round(e.px)===x&&Math.round(e.py)===y);
+ const local=localCached().some(e=>e.alive&&Math.round(e.px)===x&&Math.round(e.py)===y);
  const c=cellSprite("bu"+G.mapIdx,()=>{const base=ts*.98,cols=["#5f9e2f","#7dbb35","#9bd141","#b8e05a"];
   for(let i=0;i<4;i++)for(let n=0;n<7;n++){const fx=-.08+n*.19+(i%2)*.09,h=.55+((n*37+i*11)%5)*.07-i*.06,lean=((n+i)%3-1)*.09;
    ctx.fillStyle=cols[i];ctx.beginPath();ctx.moveTo(ts*(fx-.09),base);ctx.quadraticCurveTo(ts*(fx+lean*.5),base-ts*h*.6,ts*(fx+lean),base-ts*h);ctx.quadraticCurveTo(ts*(fx+.03),base-ts*h*.5,ts*(fx+.09),base);ctx.closePath();ctx.fill();}});
@@ -2214,7 +2245,10 @@ function draw(){if(!G)return;ctx.save();if(G.shake>0)ctx.translate((Math.random(
  for(const s of G.shots){ellipse((s.x+.5)*ts,(s.y+.5)*ts,ts*.3,ts*.3,"#78cdfa80");ellipse((s.x+.5)*ts,(s.y+.5)*ts,ts*.21,ts*.21,"#dff7ff");}for(const f of G.falls)drawFall(f);for(const f of G.wallFx){const k=f.t/320;ctx.save();ctx.globalAlpha=1-k;ctx.strokeStyle="white";ctx.lineWidth=Math.max(2,ts*.1);rrect((f.x-k*.4)*ts,(f.y-k*.4)*ts,ts*(1+k*.8),ts*(1+k*.8),ts*.2);ctx.stroke();ctx.restore();}drawBreakFx();drawZoneWarning();drawStageFx();drawParts();drawLabels();drawFloats();ctx.restore();if(G.boss?.alive)drawBossBar();if(G.intro>0)drawIntro();else if(G.over)drawRoundBanner();}
 
 /* 레이아웃: 터치 모드에서만 조작 공간을 예약. 작은 높이에도 캔버스를 강제로 키우지 않는다. */
-function isTouch(){return navigator.maxTouchPoints>0||window.matchMedia("(pointer: coarse)").matches;}
+function isTouch(){return window.matchMedia("(pointer: coarse)").matches;}
+function isPhone(){return isTouch()&&Math.min(screen.width,screen.height)<760;}
+function markPhone(){document.documentElement.classList.toggle("phone",isPhone());const s=document.querySelector(".e-one small");if(s&&isPhone())s.innerHTML="나 + 봇 최대 7명<br>화면 방향키 · 물풍선 버튼";}
+markPhone();window.addEventListener("resize",markPhone);
 function sizeCtrl(){const viewport=window.visualViewport,w=window.innerWidth||360,h=viewport&&Math.abs(viewport.scale-1)<.01&&viewport.height>0?viewport.height:window.innerHeight||700,land=touchMode&&w>h&&h<560;document.documentElement.style.setProperty("--app-height",Math.round(h)+"px");document.documentElement.style.setProperty("--ui",(touchMode?1:Math.max(1,Math.min(1.7,Math.min(w/1280,h/720)))).toFixed(3));$("app").classList.toggle("land",land);$("app").classList.toggle("touch",touchMode);let u=land?Math.max(.78,Math.min(1.08,h*.52/190)):Math.max(.78,Math.min(Math.max(140,Math.min(195,h*.27))/186,w/360));document.documentElement.style.setProperty("--u",u.toFixed(3));}
 function resize(){const wrap=$("stage"),cs=getComputedStyle(wrap),w=wrap.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),h=wrap.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);if(w<=0||h<=0)return;ts=Math.max(1,Math.floor(Math.min((w-6)/CFG.COLS,(h-4)/CFG.ROWS)));const cw=ts*CFG.COLS,ch=ts*CFG.ROWS,dpr=Math.min(2,window.devicePixelRatio||1),pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;cv.style.width=cw+"px";cv.style.height=ch+"px";ctx.setTransform(dpr,0,0,dpr,0,0);}if(G)draw();}
 let resizeQueued=false;function scheduleResize(){if(resizeQueued)return;resizeQueued=true;requestAnimationFrame(()=>{resizeQueued=false;clearInputs();sizeCtrl();resize();});}
@@ -2415,10 +2449,14 @@ function keyActions(code){const out=[];for(const [ctl,s] of activeSchemes())for(
 /* 아이템 키 하나로 바늘·순간이동을 상황에 맞게 쓴다(갇힘 = 바늘). 터치·정보판 버튼은 각각 따로 부른다. */
 function performAction(e,act){if(!e)return false;if(act==="bomb"){const ok=placeBomb(e);if(ok)e.lastBombAt=G.t;return ok;}if(act==="needle")return useNeedle(e);if(act==="tele")return useTeleport(e);if(act==="item")return e.trapped?useNeedle(e):useTeleport(e);return false;}
 function doAction(ctl,act){if(!G)return;if(NET.role==="guest"){const s=ctl==="p2"?1:0,me=G.ents.find(o=>!o.isBot&&o.netId===NET.myId&&(o.seat||0)===s),at=act==="bomb"&&me?cellOf(me):null;netSend(at?{t:"a",a:act,s,x:at[0],y:at[1]}:{t:"a",a:act,s});return;}const e=G.ents.find(o=>!o.isBot&&o.ctl===ctl)||(ctl==="p1"?G.me:null);performAction(e,act);}
-function setPadDir(d){padDir=d;document.querySelectorAll(".dbtn").forEach(b=>b.classList.toggle("held",b.dataset.dir===d));}
+function setPadDir(d){if(d===padDir&&d!==null)return;padDir=d;document.querySelectorAll(".dbtn").forEach(b=>b.classList.toggle("held",b.dataset.dir===d));}
 function clearInputs(){keys.clear();keyOrder.length=0;padPointer=null;setPadDir(null);document.querySelectorAll(".press").forEach(b=>b.classList.remove("press"));}
-const dpad=$("dpad");function padAt(ev){const r=dpad.getBoundingClientRect(),dx=ev.clientX-(r.left+r.width/2),dy=ev.clientY-(r.top+r.height/2);if(Math.abs(dx)>r.width*.7||Math.abs(dy)>r.height*.7||Math.max(Math.abs(dx),Math.abs(dy))<r.width*.12)return null;return Math.abs(dx)>Math.abs(dy)?dx>0?"right":"left":dy>0?"down":"up";}
-dpad.addEventListener("pointerdown",ev=>{if(phase!=="play"||padPointer!==null||ev.button>0)return;ev.preventDefault();SFX.unlock();padPointer=ev.pointerId;dpad.setPointerCapture(ev.pointerId);setPadDir(padAt(ev));});dpad.addEventListener("pointermove",ev=>{if(ev.pointerId!==padPointer)return;ev.preventDefault();setPadDir(padAt(ev));});for(const type of ["pointerup","pointercancel","lostpointercapture"])dpad.addEventListener(type,ev=>{if(ev.pointerId===padPointer){padPointer=null;setPadDir(null);}});
+const dpad=$("dpad");let padRect=null;function padAt(ev,fresh){if(fresh||!padRect)padRect=dpad.getBoundingClientRect();const r=padRect,dx=ev.clientX-(r.left+r.width/2),dy=ev.clientY-(r.top+r.height/2),ax=Math.abs(dx),ay=Math.abs(dy);
+ if(Math.max(ax,ay)<r.width*.1)return fresh?null:padDir;
+ /* 이미 누르던 축은 1.35배 더 기울어야 바뀐다(대각선 떨림 방지). 바깥으로 밀려나도 방향 유지. */
+ const hz=padDir==="left"||padDir==="right",vt=padDir==="up"||padDir==="down",k=1.35;let horiz=ax>ay;if(hz&&ay<ax*k)horiz=true;else if(vt&&ax<ay*k)horiz=false;
+ return horiz?dx>0?"right":"left":dy>0?"down":"up";}
+dpad.addEventListener("pointerdown",ev=>{if(phase!=="play"||padPointer!==null||ev.button>0)return;ev.preventDefault();SFX.unlock();padPointer=ev.pointerId;dpad.setPointerCapture(ev.pointerId);setPadDir(padAt(ev,true));});dpad.addEventListener("pointermove",ev=>{if(ev.pointerId!==padPointer)return;ev.preventDefault();setPadDir(padAt(ev));});for(const type of ["pointerup","pointercancel","lostpointercapture"])dpad.addEventListener(type,ev=>{if(ev.pointerId===padPointer){padPointer=null;setPadDir(null);}});
 function bindAction(id,fn){const el=$(id);el.addEventListener("pointerdown",ev=>{if(el.disabled||ev.button>0||phase!=="play")return;ev.preventDefault();el.setPointerCapture(ev.pointerId);el.classList.add("press");SFX.unlock();fn();});for(const type of ["pointerup","pointercancel","lostpointercapture"])el.addEventListener(type,()=>el.classList.remove("press"));el.addEventListener("click",ev=>{if(ev.detail===0&&!el.disabled&&phase==="play")fn();});}
 bindAction("btnBomb",()=>doAction("p1","bomb"));bindAction("btnNeedle",()=>doAction("p1","needle"));bindAction("btnTele",()=>doAction("p1","tele"));$("iNeedle").addEventListener("click",()=>doAction("p1","needle"));$("iTele").addEventListener("click",()=>doAction("p1","tele"));
 window.addEventListener("keydown",ev=>{if(ev.code==="Escape"){ev.preventDefault();if(ev.repeat)return;if(overlayOpen())closeOverlay();else if(phase==="play")showOverlay();return;}if(overlayOpen()&&ev.code==="Tab"){const nodes=[...$("overlay").querySelectorAll("button:not([hidden]),summary")].filter(n=>!n.disabled&&!n.closest("[hidden]")),first=nodes[0],last=nodes[nodes.length-1];if(ev.shiftKey&&(document.activeElement===first||document.activeElement===$("overlayTitle"))){ev.preventDefault();last?.focus();}else if(!ev.shiftKey&&document.activeElement===last){ev.preventDefault();first?.focus();}return;}if(phase!=="play"||overlayOpen())return;if(["Space","Enter"].includes(ev.code)&&ev.target instanceof HTMLElement&&ev.target.closest("button,summary,input"))return;const acts=keyActions(ev.code);
