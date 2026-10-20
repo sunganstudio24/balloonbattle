@@ -544,7 +544,7 @@ window.addEventListener("error",()=>{if(!gameUiReady){const notice=document.getE
  실제 브라우저 레이아웃·기기 터치감·WebAudio 출력은 별도 실기 확인이 필요.
  */
 /* 단일 파일 / 외부 의존성 없음. 좌표는 칸 단위, 시간은 ms(이동만 초). */
-const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.52,MAX_SPEED:5,MAX_BOMB:10,MAX_POWER:7,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:6000,MOB_DASH:4.6,MOB_REST:950,STAGE_POP:1400,RESPAWN_DELAY:1300,RESPAWN_INVULN:2600,STALL_HINT:40000,EGG_HATCH:5000,STAGE_DROP:.14,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:6000,ZONE_PLAN:9000};
+const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.26,MAX_SPEED:9,MAX_BOMB:10,MAX_POWER:7,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:6000,MOB_DASH:4.6,MOB_REST:950,STAGE_POP:1400,RESPAWN_DELAY:1300,RESPAWN_INVULN:2600,STALL_HINT:40000,EGG_HATCH:5000,STAGE_DROP:.14,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:6000,ZONE_PLAN:9000};
 const MAPS=[
  {name:"빙하",density:.87,holes:.02,sw:"#7ecbea",f1:"#e3f7fc",f2:"#cceaf4",grid:"rgba(30,90,130,.07)",hTop:"#65c9ee",hSide:"#2389b8",hEdge:"#c5f6ff",sTop:"#ffffff",sSide:"#b7d6e7",sEdge:"#f0fbff",hard:"ice",soft:"snow"},
  {name:"사막",density:.89,holes:.13,sw:"#e8b654",f1:"#fbe8bb",f2:"#f1d79b",grid:"rgba(120,80,20,.07)",hTop:"#d88f56",hSide:"#995530",hEdge:"#f3c18d",sTop:"#f2bf71",sSide:"#b07836",sEdge:"#ffe3ac",hard:"brick",soft:"crate"},
@@ -559,20 +559,20 @@ const MAPS=[
 const CHARS=[
  /* 크아처럼 캐릭터마다 최대치가 다르다(maxB 물풍선·maxP 물줄기·maxS 스피드). 스피드 내부 1단계 = 화면 표시 5.
     네 캐릭터 모두 나무위키 크아 수치(우니·모스는 문서 옛 판 기준). */
- {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:1,needles:0,maxB:6,maxP:7,maxS:5,strong:"스피드",tag:"스피드 최대 9. 물풍선은 6개까지."},
- {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:7,maxS:3,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 7까지."},
- {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:1,needles:0,maxB:6,maxP:7,maxS:4,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6개 · 스피드 8까지."},
- {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:5,maxS:4,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 8 · 물줄기는 5칸까지."},
+ {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:1,needles:0,maxB:6,maxP:7,maxS:9,strong:"스피드",tag:"스피드 최대 9. 물풍선은 6개까지."},
+ {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:7,maxS:5,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 7까지."},
+ {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:1,needles:0,maxB:6,maxP:7,maxS:7,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6개 · 스피드 8까지."},
+ {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:5,maxS:7,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 8 · 물줄기는 5칸까지."},
  /* 이 게임 오리지널 캐릭터 4명 */
- {name:"토토",color:"#ff8a3d",style:0,bombs:1,power:1,speed:1,needles:0,maxB:7,maxP:6,maxS:5,strong:"균형",tag:"여우 후드. 스피드 9까지, 물풍선 7 · 물줄기 6."},
- {name:"몽이",color:"#7cc9f5",style:1,bombs:2,power:1,speed:1,needles:0,maxB:9,maxP:5,maxS:3,strong:"물풍선 2개",tag:"구름 모자. 물풍선 2개로 시작, 9개까지. 물줄기는 5칸이 끝."},
- {name:"루루",color:"#a77be0",style:2,bombs:1,power:2,speed:1,needles:0,maxB:5,maxP:8,maxS:3,strong:"물줄기 최장",tag:"고양이 귀. 물줄기 8칸까지. 물풍선은 5개가 끝."},
- {name:"단단",color:"#8e98a8",style:3,bombs:1,power:1,speed:1,needles:0,shields:1,maxB:8,maxP:6,maxS:3,strong:"방패 1개",tag:"곰 헬멧. 방패 1개로 시작. 물풍선 8 · 물줄기 6."}
+ {name:"토토",color:"#ff8a3d",style:0,bombs:1,power:1,speed:1,needles:0,maxB:7,maxP:6,maxS:9,strong:"균형",tag:"여우 후드. 스피드 9까지, 물풍선 7 · 물줄기 6."},
+ {name:"몽이",color:"#7cc9f5",style:1,bombs:2,power:1,speed:1,needles:0,maxB:9,maxP:5,maxS:5,strong:"물풍선 2개",tag:"구름 모자. 물풍선 2개로 시작, 9개까지. 물줄기는 5칸이 끝."},
+ {name:"루루",color:"#a77be0",style:2,bombs:1,power:2,speed:1,needles:0,maxB:5,maxP:8,maxS:5,strong:"물줄기 최장",tag:"고양이 귀. 물줄기 8칸까지. 물풍선은 5개가 끝."},
+ {name:"단단",color:"#8e98a8",style:3,bombs:1,power:1,speed:1,needles:0,shields:1,maxB:8,maxP:6,maxS:5,strong:"방패 1개",tag:"곰 헬멧. 방패 1개로 시작. 물풍선 8 · 물줄기 6."}
 ];
 const ITEMS=[
  {id:"bomb",kind:"stat",w:30,sw:14,color:"#4aa8ff",label:"물풍선 +1",desc:"동시 설치 개수 +1. 최대치는 캐릭터마다 다름(6~10개)."},
  {id:"power",kind:"stat",w:30,sw:14,color:"#ff9330",label:"물줄기 +1",desc:"물줄기 길이 +1칸. 최대치는 캐릭터마다 다름(5~7칸)."},
- {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +1. 최대치는 캐릭터마다 다름(7~9)."},
+ {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +0.5. 최대치는 캐릭터마다 다름(7~9)."},
  {id:"needle",kind:"hold",w:7,sw:9,color:"#7d95ac",label:"바늘",desc:"갇힌 뒤 아이템 키(Ctrl)를 눌러 탈출. 최대 3개."},
  {id:"shield",kind:"hold",w:7,sw:9,color:"#ffd21f",label:"방패",desc:"피격을 자동으로 1회 방어. 최대 3개."},
  {id:"tele",kind:"hold",w:3,sw:7,color:"#b278ff",label:"순간이동",desc:"안전한 빈 칸으로 이동. 갇히지 않았을 때 아이템 키(Ctrl). 최대 3개."},
@@ -586,7 +586,7 @@ const ITEM_BY=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 /* 스테이지는 혼자 하는 모험이라 생존 아이템(바늘·방패) 비중을 조금 높인다. */
 const STAGE_ITEM_W={bomb:26,power:24,roller:20,needle:11,shield:10,tele:3,owl:2};
 const RIDES={
- owl:{name:"부엉이",color:"#b895e3",hp:1,speed:4,bombMax:false},
+ owl:{name:"부엉이",color:"#b895e3",hp:1,speed:6,bombMax:false},
  tank:{name:"탱크",color:"#9fae72",hp:2,speed:null,bombMax:true},
  turtle:{name:"거북이",color:"#6fbf7a",hp:1,speed:null,bombMax:false}
 };
@@ -599,7 +599,7 @@ function setBoard(c,r){CFG.COLS=c;CFG.ROWS=r;document.getElementById("app")?.cla
 function boardCenter(){return [(CFG.COLS-1)>>1,(CFG.ROWS-1)>>1];}
 function playerNo(e){return Number(e.id.slice(1))+1;}
 function playerLabel(e){return "P"+playerNo(e)+(mine(e)?" · 나":e.human?" · 친구":"")+" "+e.name;}
-function rideName(e){return e.ride==="turtle"?(e.rideSpeed===5?"쾌속 거북이":"느림 거북이"):rideOf(e)?.name||"";}
+function rideName(e){return e.ride==="turtle"?(e.rideSpeed===9?"쾌속 거북이":"느림 거북이"):rideOf(e)?.name||"";}
 function standings(){return MATCH.players.map(p=>({...p,wins:MATCH.scores[p.id]||0})).sort((a,b)=>b.wins-a.wins||a.slot-b.slot);}
 
 /* 스테이지 몬스터. spd는 초당 칸 수(플레이어 기본 속도 1단계 = 3.05칸). 초반 몬스터는 플레이어보다 느리다.
@@ -701,7 +701,8 @@ function makeEntity(id,x,y,ci,isBot){const c=CHARS[ci];return {id,isBot,mob:fals
 function rideOf(e){return RIDES[e.ride]||null;}
 function capB(e){return CHARS[e.char]?.maxB??CFG.MAX_BOMB;}function capP(e){return CHARS[e.char]?.maxP??CFG.MAX_POWER;}function capS(e){return CHARS[e.char]?.maxS??CFG.MAX_SPEED;}
 /* 화면 표시용 스피드(크아 단위: 내부 1단계 = 5). */
-function spdShow(v){return v+4;}
+/* 스피드 내부 단계 → 크아 표시값. 롤러 1개 = 0.5. 내부 1 = 5, 9 = 9. */
+function spdShow(v){const n=5+(v-1)/2;return Number.isInteger(n)?String(n):n.toFixed(1);}
 function bombCapOf(e){return rideOf(e)?.bombMax?capB(e):e.maxBombs;}
 function speedLevelOf(e){return e.ride==="turtle"?e.rideSpeed??1:rideOf(e)?.speed??e.speedLv;}
 
@@ -875,7 +876,7 @@ function zoneOf(x,y){return Math.min(1,Math.floor(y/(CFG.ROWS/2)))*3+Math.min(2,
 function addItem(x,y,id){if(!inb(x,y)||G.grid[y][x]!==0||G.items.some(it=>it.x===x&&it.y===y))return false;G.items.push({x,y,id,t:0});G.zones[zoneOf(x,y)]++;return true;}
 function dropItem(x,y){const z=zoneOf(x,y),avg=G.zones.reduce((a,b)=>a+b,0)/6,mult=Math.max(.3,Math.min(2.1,1+(avg-G.zones[z])*.5));if(Math.random()<(G.mode==="stage"?CFG.STAGE_DROP:G.dropRate??CFG.DROP)*mult)addItem(x,y,drawFromBag());}
 function itemUseful(e,id){switch(id){case"bomb":return e.maxBombs<capB(e);case"power":case"ultra":return e.power<capP(e);case"roller":case"devil":return e.speedLv<capS(e);case"needle":return e.needles<CFG.HOLD_MAX;case"shield":return e.shields<CFG.HOLD_MAX;case"tele":return e.teleports<CFG.HOLD_MAX;default:return true;}}
-function applyItem(e,id){if(id==="bomb")e.maxBombs=Math.min(capB(e),e.maxBombs+1);if(id==="power")e.power=Math.min(capP(e),e.power+1);if(id==="roller")e.speedLv=Math.min(capS(e),e.speedLv+1);if(id==="ultra")e.power=capP(e);if(id==="devil")e.speedLv=capS(e);if(id==="needle")e.needles=Math.min(3,e.needles+1);if(id==="shield")e.shields=Math.min(3,e.shields+1);if(id==="tele")e.teleports=Math.min(3,e.teleports+1);if(RIDES[id]){const r=RIDES[id];e.ride=id;e.rideHp=r.hp;e.rideSpeed=id==="turtle"?(Math.random()<CFG.TURTLE_FAST_CHANCE?5:1):r.speed;/* A slower mount changes every escape ETA immediately. */e.thinkT=0;}}
+function applyItem(e,id){if(id==="bomb")e.maxBombs=Math.min(capB(e),e.maxBombs+1);if(id==="power")e.power=Math.min(capP(e),e.power+1);if(id==="roller")e.speedLv=Math.min(capS(e),e.speedLv+1);if(id==="ultra")e.power=capP(e);if(id==="devil")e.speedLv=capS(e);if(id==="needle")e.needles=Math.min(3,e.needles+1);if(id==="shield")e.shields=Math.min(3,e.shields+1);if(id==="tele")e.teleports=Math.min(3,e.teleports+1);if(RIDES[id]){const r=RIDES[id];e.ride=id;e.rideHp=r.hp;e.rideSpeed=id==="turtle"?(Math.random()<CFG.TURTLE_FAST_CHANCE?9:1):r.speed;/* A slower mount changes every escape ETA immediately. */e.thinkT=0;}}
 function pickItems(ms){
  for(let i=G.items.length-1;i>=0;i--){const it=G.items[i];it.t+=ms;
   for(const e of G.ents){
@@ -1029,13 +1030,13 @@ function botSummary(e){return DIFF_NAMES[e.diff||sel.diff]||DIFF_NAMES.normal;}
 
 function statSum(e){return e.maxBombs+e.power+e.speedLv;}
 /* 파밍 필요도 0~1: 물풍선·물줄기·스피드가 각각 4에 못 미친 만큼. 약할수록 싸움보다 아이템을 챙긴다(크아 COM처럼 파밍 → 압박). */
-function farmNeed(e){return Math.min(1,(Math.max(0,4-e.maxBombs)+Math.max(0,4-e.power)+Math.max(0,4-e.speedLv))/6);}
+function farmNeed(e){return Math.min(1,(Math.max(0,4-e.maxBombs)+Math.max(0,4-e.power)+Math.max(0,7-e.speedLv)/2)/6);}
 function itemUtility(e,it){
  if(!itemUseful(e,it.id))return 0;
- switch(it.id){case"bomb":return 8+(capB(e)-e.maxBombs)*1.4;case"power":return 8+(capP(e)-e.power)*1.5;case"roller":return 10+(capS(e)-e.speedLv)*2.4;case"ultra":return 12+(capP(e)-e.power)*3;case"devil":return 14+(capS(e)-e.speedLv)*4.8;case"needle":return e.needles===0?24:10/(e.needles+1);case"shield":return e.shields===0?28:14/(e.shields+1);case"tele":return e.teleports===0?22:12/(e.teleports+1);default:{
+ switch(it.id){case"bomb":return 8+(capB(e)-e.maxBombs)*1.4;case"power":return 8+(capP(e)-e.power)*1.5;case"roller":return 10+(capS(e)-e.speedLv)*1.2;case"ultra":return 12+(capP(e)-e.power)*3;case"devil":return 14+(capS(e)-e.speedLv)*2.4;case"needle":return e.needles===0?24:10/(e.needles+1);case"shield":return e.shields===0?28:14/(e.shields+1);case"tele":return e.teleports===0?22:12/(e.teleports+1);default:{
   const r=RIDES[it.id];if(!r)return 0;
   // A blind turtle roll is not worth replacing a healthy mount or a fast build.
-  if(it.id==="turtle")return e.ride||e.speedLv>=4?0:13;
+  if(it.id==="turtle")return e.ride||e.speedLv>=7?0:13;
   if(!e.ride)return it.id==="owl"?Math.max(12,30-e.speedLv*2):29;
   if(e.ride==="turtle")return e.rideSpeed===1?36:it.id==="tank"?18:0;
   if(it.id===e.ride)return e.rideHp<r.hp?20:0;
@@ -1966,7 +1967,7 @@ function drawRide(e,cx,cy,moving){
   ellipse(cx,cy+ts*.02,ts*.23,ts*.08,"#455238");
   if(e.dir==="up"){ctx.fillStyle=dk;rrect(cx-ts*.05,cy-ts*.29,ts*.1,ts*.31,ts*.04);ctx.fill();ink(.02);}
  }else{
-  const fast=e.rideSpeed===5,green=fast?"#29b7b0":"#75ac60",step=moving?Math.sin(G.visualT/(fast?75:220))*ts*.025:0;
+  const fast=e.rideSpeed===9,green=fast?"#29b7b0":"#75ac60",step=moving?Math.sin(G.visualT/(fast?75:220))*ts*.025:0;
   for(const sx of [-1,1])for(const sy of [0,1]){ellipse(cx+sx*ts*.30,cy+ts*(.08+sy*.21)+(sy?step:-step),ts*.115,ts*.065,"#b5d887");ink(.02);}
   ellipse(cx,cy+ts*.14,ts*.37,ts*.24,"#365e46");ink(.025);ellipse(cx,cy+ts*.08,ts*.34,ts*.22,green);
   ctx.strokeStyle=fast?"#c9ffad":"#bfd995";ctx.lineWidth=Math.max(1,ts*.03);ctx.beginPath();ctx.moveTo(cx,cy-ts*.08);ctx.lineTo(cx-ts*.17,cy+ts*.05);ctx.lineTo(cx-ts*.12,cy+ts*.23);ctx.lineTo(cx+ts*.12,cy+ts*.23);ctx.lineTo(cx+ts*.17,cy+ts*.05);ctx.closePath();ctx.stroke();
@@ -1993,12 +1994,12 @@ function drawRideFront(e,cx,cy,moving){
   for(let i=0;i<e.rideHp;i++)ellipse(cx+ts*(-.065+i*.13),cy+ts*.18,ts*.025,ts*.021,"#fff2a6");
  }else{
   if(e.dir!=="up")drawTurtleHead(e,cx+(e.dir==="left"?-ts*.32:e.dir==="right"?ts*.32:0),cy+ts*.24);
-  if(e.rideSpeed===5){ctx.strokeStyle="#d0ffe9";ctx.lineWidth=Math.max(1,ts*.03);for(const sy of [.05,.18]){ctx.beginPath();ctx.moveTo(cx-ts*.44,cy+ts*sy);ctx.lineTo(cx-ts*.52,cy+ts*sy);ctx.stroke();}}
+  if(e.rideSpeed===9){ctx.strokeStyle="#d0ffe9";ctx.lineWidth=Math.max(1,ts*.03);for(const sy of [.05,.18]){ctx.beginPath();ctx.moveTo(cx-ts*.44,cy+ts*sy);ctx.lineTo(cx-ts*.52,cy+ts*sy);ctx.stroke();}}
 
  }
 }
 function drawTurtleHead(e,x,y){
- const fast=e.rideSpeed===5;ellipse(x,y,ts*.16,ts*.135,fast?"#b8eeb0":"#cee4a0");ink(.022);
+ const fast=e.rideSpeed===9;ellipse(x,y,ts*.16,ts*.135,fast?"#b8eeb0":"#cee4a0");ink(.022);
  for(const sx of [-1,1]){const ex=x+sx*ts*.063,ey=y-ts*.025;if(fast)ellipse(ex,ey,ts*.027,ts*.042,"#304a43");else{ctx.strokeStyle="#436345";ctx.lineWidth=Math.max(1,ts*.022);ctx.beginPath();ctx.moveTo(ex-ts*.03,ey);ctx.lineTo(ex+ts*.03,ey);ctx.stroke();}}
  ctx.strokeStyle="#537d47";ctx.lineWidth=Math.max(1,ts*.02);ctx.beginPath();ctx.arc(x,y+ts*.035,ts*.04,0,Math.PI);ctx.stroke();
 }
@@ -2159,7 +2160,7 @@ let hudDirty=false,ffOn=false;
 /* 사람이 모두 탈락해 봇끼리만 남았을 때 빨리 보기(3배). 온라인 참가자 화면에서는 방장이 정한다. */
 function spectating(){return !!G&&G.mode==="battle"&&!G.over&&phase==="play"&&!G.ents.some(e=>e.alive&&e.human);}
 function updateHud(){hudDirty=true;}
-function renderHud(){hudDirty=false;if(!G||!MATCH)return;const p=G.me,cap=bombCapOf(p),active=activeBombs(p),available=Math.max(0,cap-active),ready=combatActive()&&p.alive,ride=rideOf(p);setText("sBomb",available+"/"+cap);setText("sBombSub","남음 / 전체");$("bombStat").title=`놓을 수 있는 물풍선 ${available}개 / 동시 설치 최대 ${cap}개 · 설치 중 ${active}개`;setText("sPower",p.power+"칸");setText("sSpeed",spdShow(speedLevelOf(p))+"/"+spdShow(capS(p)));setText("sSpeedSub",ride&&p.ride!=="tank"?rideName(p)+" 고정":"최대 "+spdShow(capS(p)));setText("sPowerSub","최대 "+capP(p)+"칸");
+function renderHud(){hudDirty=false;if(!G||!MATCH)return;const p=G.me,cap=bombCapOf(p),active=activeBombs(p),available=Math.max(0,cap-active),ready=combatActive()&&p.alive,ride=rideOf(p);setText("sBomb",available+"/"+cap);setText("sBombSub","남음 / 전체");$("bombStat").title=`놓을 수 있는 물풍선 ${available}개 / 동시 설치 최대 ${cap}개 · 설치 중 ${active}개`;setText("sPower",p.power+"칸");setText("sSpeed",ride&&p.ride!=="tank"?spdShow(speedLevelOf(p)):spdShow(speedLevelOf(p))+"/"+spdShow(capS(p)));setText("sSpeedSub",ride&&p.ride!=="tank"?rideName(p)+" 고정":"최대 "+spdShow(capS(p)));setText("sPowerSub","최대 "+capP(p)+"칸");
  for(const [id,value]of [["Needle",p.needles],["Shield",p.shields],["Tele",p.teleports]]){setText("s"+id,value+"/3");$("i"+id).classList.toggle("empty",value===0);}
  const needle=ready&&p.trapped&&p.needles>0,tele=ready&&!p.trapped&&p.teleports>0;$("iNeedle").disabled=!needle;$("iTele").disabled=!tele;$("iNeedle").classList.toggle("usable",needle);$("iNeedle").classList.toggle("urgent",needle);$("iTele").classList.toggle("usable",tele);setText("sNeedleSub",needle?"지금 탈출!":"갇힌 뒤 사용");$("iNeedle").title=`바늘 ${p.needles}개 / 최대 3개 · 갇힌 뒤 아이템 키(Ctrl) 또는 이 버튼으로 탈출`;$("iShield").title=`방패 ${p.shields}개 / 최대 3개 · 탈것 다음에 자동 방어`;$("iTele").title=`순간이동 ${p.teleports}개 / 최대 3개 · 갇히지 않았을 때 아이템 키(Ctrl) 또는 이 버튼`;
  $("btnNeedle").disabled=!needle;$("btnNeedle").classList.toggle("urgent",needle);setText("padNeedleLabel",needle?"탈출!":"바늘");setText("padBombHint",p.trapped?"갇힘":!p.alive?"탈락":!ready?"준비 중":available?"놓을 수 있음":"터지면 충전");$("btnTele").disabled=!tele;$("btnBomb").disabled=!ready||p.trapped||!available;setText("padNeedle",p.needles);setText("padTele",p.teleports);setText("padBomb",available+"/"+cap);
@@ -2710,7 +2711,7 @@ function cpInfoHTML(i){
  const c=CHARS[i],bar=(lab,st,mx,top,show)=>`<div class="cp-stat"><span>${lab}</span><div class="cp-bar"><i class="mx" style="width:${mx/top*100}%"></i><i class="st" style="width:${st/top*100}%"></i></div><span>${show(st)} → ${show(mx)}</span></div>`;
  const extra=[c.needles?"바늘 "+c.needles+"개로 시작":"",c.shields?"방패 "+c.shields+"개로 시작":""].filter(Boolean).join(" · ");
  return `<div class="cp-portrait">${avatarSVG(i,"down",true)}<div><div class="cp-name">${c.name}</div><div class="cp-type">${CP_TYPES[i]||""}</div></div></div><p class="cp-tag">${c.tag}</p>`
-  +bar("물풍선",c.bombs,c.maxB,10,v=>v+"개")+bar("물줄기",c.power,c.maxP,8,v=>v+"칸")+bar("스피드",c.speed,c.maxS,5,v=>String(spdShow(v)))
+  +bar("물풍선",c.bombs,c.maxB,10,v=>v+"개")+bar("물줄기",c.power,c.maxP,8,v=>v+"칸")+bar("스피드",c.speed,c.maxS,9,v=>String(spdShow(v)))
   +`<p class="cp-tag" style="margin:0;font-size:11px">진한 색은 시작값, 연한 색은 아이템으로 올릴 수 있는 최대치.</p>`+(extra?`<div class="cp-extra">${extra}</div>`:"");
 }
 function cpRender(){
