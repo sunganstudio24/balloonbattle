@@ -393,7 +393,7 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
     <div class="hud-section"><p class="rail-label">내 능력치</p><div class="grp" aria-label="현재 능력치">
      <div class="stat" id="bombStat"><span class="label"><span class="ico" data-icon="bomb"></span>물풍선</span><b class="value" id="sBomb"></b><span class="subvalue" id="sBombSub"></span></div>
      <div class="stat" id="powerStat"><span class="label"><span class="ico" data-icon="power"></span>물줄기</span><b class="value" id="sPower"></b><span class="subvalue" id="sPowerSub">최대 7칸</span></div>
-     <div class="stat" id="speedStat"><span class="label"><span class="ico" data-icon="roller"></span>스피드</span><b class="value" id="sSpeed"></b><span class="subvalue" id="sSpeedSub">최대 9</span></div>
+     <div class="stat" id="speedStat"><span class="label"><span class="ico" data-icon="roller"></span>스피드</span><b class="value" id="sSpeed"></b><span class="subvalue" id="sSpeedSub">최대 9단계</span></div>
     </div></div>
     <div class="hud-section"><p class="rail-label">소지 아이템 <span style="font-weight:500">· 각 최대 3개</span></p><div class="grp items" aria-label="소지 아이템과 개수">
      <button class="islot" id="iNeedle"><span class="label"><span class="ico" data-icon="needle"></span>바늘</span><b class="value" id="sNeedle"></b><span class="subvalue" id="sNeedleSub">갇힌 뒤 사용</span></button>
@@ -559,12 +559,12 @@ const MAPS=[
 const CHARS=[
  /* 크아처럼 캐릭터마다 최대치가 다르다(maxB 물풍선·maxP 물줄기·maxS 스피드). 스피드 내부 1단계 = 화면 표시 5.
     네 캐릭터 모두 나무위키 크아 수치(우니·모스는 문서 옛 판 기준). */
- {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:1,needles:0,maxB:6,maxP:7,maxS:9,strong:"스피드",tag:"스피드 최대 9. 물풍선은 6개까지."},
- {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:7,maxS:5,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 7까지."},
- {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:1,needles:0,maxB:6,maxP:7,maxS:7,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6개 · 스피드 8까지."},
- {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:5,maxS:7,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 8 · 물줄기는 5칸까지."},
+ {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:1,needles:0,maxB:6,maxP:7,maxS:9,strong:"스피드",tag:"스피드 9단계까지. 물풍선은 6개까지."},
+ {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:7,maxS:5,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 5단계까지."},
+ {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:1,needles:0,maxB:6,maxP:7,maxS:7,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6개 · 스피드 7단계까지."},
+ {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:5,maxS:7,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 7단계 · 물줄기는 5칸까지."},
  /* 이 게임 오리지널 캐릭터 4명 */
- {name:"토토",color:"#ff8a3d",style:0,bombs:1,power:1,speed:1,needles:0,maxB:7,maxP:6,maxS:9,strong:"균형",tag:"여우 후드. 스피드 9까지, 물풍선 7 · 물줄기 6."},
+ {name:"토토",color:"#ff8a3d",style:0,bombs:1,power:1,speed:1,needles:0,maxB:7,maxP:6,maxS:9,strong:"균형",tag:"여우 후드. 스피드 9단계까지, 물풍선 7 · 물줄기 6."},
  {name:"몽이",color:"#7cc9f5",style:1,bombs:2,power:1,speed:1,needles:0,maxB:9,maxP:5,maxS:5,strong:"물풍선 2개",tag:"구름 모자. 물풍선 2개로 시작, 9개까지. 물줄기는 5칸이 끝."},
  {name:"루루",color:"#a77be0",style:2,bombs:1,power:2,speed:1,needles:0,maxB:5,maxP:8,maxS:5,strong:"물줄기 최장",tag:"고양이 귀. 물줄기 8칸까지. 물풍선은 5개가 끝."},
  {name:"단단",color:"#8e98a8",style:3,bombs:1,power:1,speed:1,needles:0,shields:1,maxB:8,maxP:6,maxS:5,strong:"방패 1개",tag:"곰 헬멧. 방패 1개로 시작. 물풍선 8 · 물줄기 6."}
@@ -572,7 +572,7 @@ const CHARS=[
 const ITEMS=[
  {id:"bomb",kind:"stat",w:30,sw:14,color:"#4aa8ff",label:"물풍선 +1",desc:"동시 설치 개수 +1. 최대치는 캐릭터마다 다름(6~10개)."},
  {id:"power",kind:"stat",w:30,sw:14,color:"#ff9330",label:"물줄기 +1",desc:"물줄기 길이 +1칸. 최대치는 캐릭터마다 다름(5~7칸)."},
- {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +0.5. 최대치는 캐릭터마다 다름(7~9)."},
+ {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +1단계. 최대치는 캐릭터마다 다름(5~9단계)."},
  {id:"needle",kind:"hold",w:7,sw:9,color:"#7d95ac",label:"바늘",desc:"갇힌 뒤 아이템 키(Ctrl)를 눌러 탈출. 최대 3개."},
  {id:"shield",kind:"hold",w:7,sw:9,color:"#ffd21f",label:"방패",desc:"피격을 자동으로 1회 방어. 최대 3개."},
  {id:"tele",kind:"hold",w:3,sw:7,color:"#b278ff",label:"순간이동",desc:"안전한 빈 칸으로 이동. 갇히지 않았을 때 아이템 키(Ctrl). 최대 3개."},
@@ -701,8 +701,8 @@ function makeEntity(id,x,y,ci,isBot){const c=CHARS[ci];return {id,isBot,mob:fals
 function rideOf(e){return RIDES[e.ride]||null;}
 function capB(e){return CHARS[e.char]?.maxB??CFG.MAX_BOMB;}function capP(e){return CHARS[e.char]?.maxP??CFG.MAX_POWER;}function capS(e){return CHARS[e.char]?.maxS??CFG.MAX_SPEED;}
 /* 화면 표시용 스피드(크아 단위: 내부 1단계 = 5). */
-/* 스피드 내부 단계 → 크아 표시값. 롤러 1개 = 0.5. 내부 1 = 5, 9 = 9. */
-function spdShow(v){const n=5+(v-1)/2;return Number.isInteger(n)?String(n):n.toFixed(1);}
+/* 스피드 표시: 1단계부터 센다. 롤러 1개 = +1단계(크아 표시로는 +0.5). */
+function spdShow(v){return String(v);}
 function bombCapOf(e){return rideOf(e)?.bombMax?capB(e):e.maxBombs;}
 function speedLevelOf(e){return e.ride==="turtle"?e.rideSpeed??1:rideOf(e)?.speed??e.speedLv;}
 
@@ -2160,7 +2160,7 @@ let hudDirty=false,ffOn=false;
 /* 사람이 모두 탈락해 봇끼리만 남았을 때 빨리 보기(3배). 온라인 참가자 화면에서는 방장이 정한다. */
 function spectating(){return !!G&&G.mode==="battle"&&!G.over&&phase==="play"&&!G.ents.some(e=>e.alive&&e.human);}
 function updateHud(){hudDirty=true;}
-function renderHud(){hudDirty=false;if(!G||!MATCH)return;const p=G.me,cap=bombCapOf(p),active=activeBombs(p),available=Math.max(0,cap-active),ready=combatActive()&&p.alive,ride=rideOf(p);setText("sBomb",available+"/"+cap);setText("sBombSub","남음 / 전체");$("bombStat").title=`놓을 수 있는 물풍선 ${available}개 / 동시 설치 최대 ${cap}개 · 설치 중 ${active}개`;setText("sPower",p.power+"칸");setText("sSpeed",ride&&p.ride!=="tank"?spdShow(speedLevelOf(p)):spdShow(speedLevelOf(p))+"/"+spdShow(capS(p)));setText("sSpeedSub",ride&&p.ride!=="tank"?rideName(p)+" 고정":"최대 "+spdShow(capS(p)));setText("sPowerSub","최대 "+capP(p)+"칸");
+function renderHud(){hudDirty=false;if(!G||!MATCH)return;const p=G.me,cap=bombCapOf(p),active=activeBombs(p),available=Math.max(0,cap-active),ready=combatActive()&&p.alive,ride=rideOf(p);setText("sBomb",available+"/"+cap);setText("sBombSub","남음 / 전체");$("bombStat").title=`놓을 수 있는 물풍선 ${available}개 / 동시 설치 최대 ${cap}개 · 설치 중 ${active}개`;setText("sPower",p.power+"칸");setText("sSpeed",ride&&p.ride!=="tank"?spdShow(speedLevelOf(p)):spdShow(speedLevelOf(p))+"/"+spdShow(capS(p)));setText("sSpeedSub",ride&&p.ride!=="tank"?rideName(p)+" 고정":"최대 "+spdShow(capS(p))+"단계");setText("sPowerSub","최대 "+capP(p)+"칸");
  for(const [id,value]of [["Needle",p.needles],["Shield",p.shields],["Tele",p.teleports]]){setText("s"+id,value+"/3");$("i"+id).classList.toggle("empty",value===0);}
  const needle=ready&&p.trapped&&p.needles>0,tele=ready&&!p.trapped&&p.teleports>0;$("iNeedle").disabled=!needle;$("iTele").disabled=!tele;$("iNeedle").classList.toggle("usable",needle);$("iNeedle").classList.toggle("urgent",needle);$("iTele").classList.toggle("usable",tele);setText("sNeedleSub",needle?"지금 탈출!":"갇힌 뒤 사용");$("iNeedle").title=`바늘 ${p.needles}개 / 최대 3개 · 갇힌 뒤 아이템 키(Ctrl) 또는 이 버튼으로 탈출`;$("iShield").title=`방패 ${p.shields}개 / 최대 3개 · 탈것 다음에 자동 방어`;$("iTele").title=`순간이동 ${p.teleports}개 / 최대 3개 · 갇히지 않았을 때 아이템 키(Ctrl) 또는 이 버튼`;
  $("btnNeedle").disabled=!needle;$("btnNeedle").classList.toggle("urgent",needle);setText("padNeedleLabel",needle?"탈출!":"바늘");setText("padBombHint",p.trapped?"갇힘":!p.alive?"탈락":!ready?"준비 중":available?"놓을 수 있음":"터지면 충전");$("btnTele").disabled=!tele;$("btnBomb").disabled=!ready||p.trapped||!available;setText("padNeedle",p.needles);setText("padTele",p.teleports);setText("padBomb",available+"/"+cap);
