@@ -2615,7 +2615,7 @@ function renderRoom(){
 /* 설정이 바뀌면 저장하고, 온라인 방장은 참가자에게 알린다. */
 function roomChanged(){saveSettings();syncMenu();if(NET.role==="host")netLobby();else renderRoom();SFX.ui();}
 function roomSet(k,v){if(!roomCanEdit())return;sel[k]=v;if(k==="form"&&v==="team")sel.bots=4-lobbyHumans();roomChanged();}
-function botSlotsCopy(){return Array.from({length:3},(_,i)=>({...botOption(i+1)}));}
+function botSlotsCopy(){return Array.from({length:MAX_PLAYERS-1},(_,i)=>({...botOption(i+1)}));}
 function pickChar(which,v){if(!validCharacter(v))return;if(which===1)sel.p2char=v;else sel.char=v;saveSettings();syncMenu();if(NET.role==="guest"){netCfg();renderRoom();}else if(NET.role==="host")netLobby();else renderRoom();SFX.ui();}
 function stepMap(d){if(!roomCanEdit())return;const i=Math.max(0,MAP_ORDER.indexOf(sel.map));sel.map=MAP_ORDER[(i+d+MAP_ORDER.length)%MAP_ORDER.length];roomChanged();}
 $("roomCopy").addEventListener("click",ev=>copyText(NET.code,ev.currentTarget));
@@ -2646,7 +2646,7 @@ $("palTarget").addEventListener("click",ev=>{const b=ev.target.closest("button[d
 $("roomSlots").addEventListener("click",ev=>{
  const t=ev.target.closest("button");if(!t||t.disabled)return;const edit=roomCanEdit();
  if(edit&&t.dataset.addBot){const st=roomState();sel.bots=st.count-st.humans+1;roomChanged();return;}
- if(edit&&t.dataset.rmBot){const slot=Number(t.dataset.rmBot),st=roomState(),arr=botSlotsCopy();if(slot<1||slot>3)return;arr.splice(slot-1,1);arr.push({diff:"normal",char:-1});sel.botSlots=arr;sel.bots=Math.max(0,st.count-st.humans-1);roomChanged();return;}
+ if(edit&&t.dataset.rmBot){const slot=Number(t.dataset.rmBot),st=roomState(),arr=botSlotsCopy();if(slot<1||slot>MAX_PLAYERS-1)return;arr.splice(slot-1,1);arr.push({diff:"normal",char:-1});sel.botSlots=arr;sel.bots=Math.max(0,st.count-st.humans-1);roomChanged();return;}
  if(edit&&t.dataset.botDiff!=null){const slot=Number(t.dataset.botDiff),ids=Object.keys(AI_CFG),arr=botSlotsCopy(),o=arr[slot-1];if(!o)return;o.diff=ids[Math.max(0,Math.min(ids.length-1,ids.indexOf(o.diff)+Number(t.dataset.step)))];sel.botSlots=arr;roomChanged();return;}
  if(edit&&t.dataset.botChar!=null){const slot=Number(t.dataset.botChar),arr=botSlotsCopy(),o=arr[slot-1],order=[-1,0,1,2,3];if(!o)return;o.char=order[(order.indexOf(o.char)+1)%order.length];sel.botSlots=arr;roomChanged();return;}
  if(t.dataset.teamKey!=null){const next=Number(t.dataset.team)?0:1;if(edit){sel.teamPick={...sel.teamPick,[t.dataset.teamKey]:next};roomChanged();}else{netSend({t:"team",s:Number(t.dataset.seat),team:next});SFX.ui();}}
@@ -2705,11 +2705,11 @@ function restoreSettings(prev){
  if(!prev||typeof prev!=="object"||Array.isArray(prev))prev={};
  for(const [id,k,cast]of WIRES){const v=prev[k];if([...$(id).querySelectorAll(".opt")].some(b=>b.dataset.v===String(v)))sel[k]=cast?cast(v):String(v);}
  if(validCharacter(prev.p2char))sel.p2char=prev.p2char;
- if(prev.teamPick&&typeof prev.teamPick==="object")sel.teamPick=Object.fromEntries(Object.entries(prev.teamPick).filter(([k,v])=>/^(h[01]|bot[0-3])$/.test(k)&&(v===0||v===1)));
+ if(prev.teamPick&&typeof prev.teamPick==="object")sel.teamPick=Object.fromEntries(Object.entries(prev.teamPick).filter(([k,v])=>/^(h[01]|bot[0-7])$/.test(k)&&(v===0||v===1)));
  const legacyDiff=Object.keys(AI_CFG).includes(prev.diff)?prev.diff:"normal";
- sel.botSlots=Array.from({length:3},(_,i)=>{const o=Array.isArray(prev.botSlots)?prev.botSlots[i]:null;return {diff:Object.keys(AI_CFG).includes(o?.diff)?o.diff:legacyDiff,char:validCharacter(o?.char)?o.char:-1};});
+ sel.botSlots=Array.from({length:MAX_PLAYERS-1},(_,i)=>{const o=Array.isArray(prev.botSlots)?prev.botSlots[i]:null;return {diff:Object.keys(AI_CFG).includes(o?.diff)?o.diff:legacyDiff,char:validCharacter(o?.char)?o.char:-1};});
 }
-function saveSettings(){try{const settings=Object.fromEntries(WIRES.map(([,key])=>[key,sel[key]]));settings.p2char=sel.p2char;settings.teamPick=Object.fromEntries(Object.entries(sel.teamPick||{}).filter(([k])=>/^(h[01]|bot[0-3])$/.test(k)));settings.botSlots=Array.from({length:3},(_,i)=>botOption(i+1));localStorage.setItem("water-battle-settings-v3",JSON.stringify(settings));}catch{}}
+function saveSettings(){try{const settings=Object.fromEntries(WIRES.map(([,key])=>[key,sel[key]]));settings.p2char=sel.p2char;settings.teamPick=Object.fromEntries(Object.entries(sel.teamPick||{}).filter(([k])=>/^(h[01]|bot[0-7])$/.test(k)));settings.botSlots=Array.from({length:MAX_PLAYERS-1},(_,i)=>botOption(i+1));localStorage.setItem("water-battle-settings-v3",JSON.stringify(settings));}catch{}}
 let storedSettings=null;
 for(const key of ["water-battle-settings-v3","water-battle-settings-v2"]){try{const value=JSON.parse(localStorage.getItem(key)||"null");if(value&&typeof value==="object"&&!Array.isArray(value)){storedSettings=value;break;}}catch{}}
 restoreSettings(storedSettings);
@@ -2741,7 +2741,7 @@ $("botSetup").addEventListener("change",ev=>{
  if(kind==="p2char"){if(["-1","0","1","2","3"].includes(value)){sel.p2char=Number(value);saveSettings();SFX.ui();if(NET.role==="guest")netCfg();if(NET.role==="host")netLobby();}return;}
  if(!Number.isInteger(slot)||slot<1||slot>3||!["diff","char"].includes(kind))return;
  if(kind==="diff"&&!Object.keys(AI_CFG).includes(value)||kind==="char"&&!["-1","0","1","2","3"].includes(value))return;
- sel.botSlots=Array.from({length:3},(_,i)=>botOption(i+1));sel.botSlots[slot-1][kind]=kind==="char"?Number(value):value;
+ sel.botSlots=Array.from({length:MAX_PLAYERS-1},(_,i)=>botOption(i+1));sel.botSlots[slot-1][kind]=kind==="char"?Number(value):value;
  updateLobby();saveSettings();SFX.ui();
 });
 function syncMenu(){
