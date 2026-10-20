@@ -530,20 +530,20 @@ const MAPS=[
 ];
 const CHARS=[
  /* 크아처럼 캐릭터마다 최대치가 다르다(maxB 물풍선·maxP 물줄기·maxS 스피드). 스피드 내부 1단계 = 화면 표시 5.
-    배찌·다오는 크아 수치(나무위키), 우니·모스는 그 사이로 맞춘 값. */
+    네 캐릭터 모두 나무위키 크아 수치(우니·모스는 문서 옛 판 기준). */
  {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:1,needles:0,maxB:6,maxP:7,maxS:5,strong:"스피드",tag:"스피드 최대 9. 물풍선은 6개까지."},
  {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:7,maxS:3,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 7까지."},
  {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:1,needles:0,maxB:6,maxP:7,maxS:4,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6개 · 스피드 8까지."},
- {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:7,maxS:4,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 8까지."}
+ {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:5,maxS:4,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 8 · 물줄기는 5칸까지."}
 ];
 const ITEMS=[
  {id:"bomb",kind:"stat",w:30,sw:14,color:"#4aa8ff",label:"물풍선 +1",desc:"동시 설치 개수 +1. 최대치는 캐릭터마다 다름(6~10개)."},
- {id:"power",kind:"stat",w:30,sw:14,color:"#ff9330",label:"물줄기 +1",desc:"물줄기 길이 +1칸. 최대 7칸."},
+ {id:"power",kind:"stat",w:30,sw:14,color:"#ff9330",label:"물줄기 +1",desc:"물줄기 길이 +1칸. 최대치는 캐릭터마다 다름(5~7칸)."},
  {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +1. 최대치는 캐릭터마다 다름(7~9)."},
  {id:"needle",kind:"hold",w:7,sw:9,color:"#7d95ac",label:"바늘",desc:"갇힌 뒤 아이템 키(Ctrl)를 눌러 탈출. 최대 3개."},
  {id:"shield",kind:"hold",w:7,sw:9,color:"#ffd21f",label:"방패",desc:"피격을 자동으로 1회 방어. 최대 3개."},
  {id:"tele",kind:"hold",w:3,sw:7,color:"#b278ff",label:"순간이동",desc:"안전한 빈 칸으로 이동. 갇히지 않았을 때 아이템 키(Ctrl). 최대 3개."},
- {id:"ultra",kind:"stat",w:1,sw:6,color:"#a45cff",label:"울트라 물풍선",desc:"물줄기를 즉시 최대 7칸으로."},
+ {id:"ultra",kind:"stat",w:1,sw:6,color:"#a45cff",label:"울트라 물풍선",desc:"물줄기를 즉시 캐릭터 최대치로."},
  {id:"devil",kind:"stat",w:1,sw:6,color:"#ff2f5e",label:"붉은 악마",desc:"스피드를 즉시 캐릭터 최대치로."},
  {id:"owl",kind:"ride",w:1,sw:7,color:"#b895e3",label:"부엉이",desc:"탑승 중 속도 4단계 고정. 피격 1회 방어. 내리면 원래 속도로 돌아옵니다."},
  {id:"tank",kind:"ride",w:1,sw:6,color:"#9fae72",label:"탱크",desc:"탑승 중 물풍선이 캐릭터 최대치로. 피격 2회 방어."},
