@@ -949,6 +949,8 @@ function botSummary(e){return DIFF_NAMES[e.diff||sel.diff]||DIFF_NAMES.normal;}
 
 
 function statSum(e){return e.maxBombs+e.power+e.speedLv;}
+/* 파밍 필요도 0~1: 물풍선·물줄기·스피드가 각각 4에 못 미친 만큼. 약할수록 싸움보다 아이템을 챙긴다(크아 COM처럼 파밍 → 압박). */
+function farmNeed(e){return Math.min(1,(Math.max(0,4-e.maxBombs)+Math.max(0,4-e.power)+Math.max(0,4-e.speedLv))/6);}
 function itemUtility(e,it){
  if(!itemUseful(e,it.id))return 0;
  switch(it.id){case"bomb":return 8+(8-e.maxBombs)*1.4;case"power":return 8+(8-e.power)*1.5;case"roller":return 10+(6-e.speedLv)*2;case"ultra":return 12+(8-e.power)*3;case"devil":return 14+(6-e.speedLv)*4;case"needle":return e.needles===0?24:10/(e.needles+1);case"shield":return e.shields===0?28:14/(e.shields+1);case"tele":return e.teleports===0?22:12/(e.teleports+1);default:{
@@ -1319,10 +1321,10 @@ function followPlan(e,h,c,ctx){
 function choosePlan(e,h,c,ctx){
  const {x,y,target,tc,canBomb,safeBomb,drop,mate,early,late}=ctx,cands=[];
  const back=p=>p&&p.dir&&p.dir===OPP[e.dir]?1.2:0,distT=target?Math.abs(x-tc[0])+Math.abs(y-tc[1]):99;
- const item=bestItemRoute(e,h,c.greed+(early?2:0));
- if(item){const it=G.items.find(i=>i.x===item.x&&i.y===item.y);if(it)cands.push({kind:"item",p:item,score:2.5+itemUtility(e,it)*.22-eta(e,item)*.45-back(item),until:4500});}
+ const need=late>.5?0:farmNeed(e),item=bestItemRoute(e,h,c.greed+(early?2:0)+Math.round(need*4));
+ if(item){const it=G.items.find(i=>i.x===item.x&&i.y===item.y);if(it)cands.push({kind:"item",p:item,score:2.5+itemUtility(e,it)*.22+need*7-eta(e,item)*.45-back(item),until:4500});}
  if(target&&distT<=c.hunt+late*14){
-  const aggroNow=Math.min(1.3,c.aggro*(early&&distT>4?.45:1)+late*.45);
+  const aggroNow=Math.min(1.3,c.aggro*(early&&distT>4?.45:1)*(1-need*.55)+late*.45);
   // 물풍선이 없으면 사거리 자리로 뛰어가 봐야 할 게 없다(가서 왔다갔다만 한다). 그땐 거리만 좁힌다.
   const at=c.tactics>=1&&ctx.ready<=1200?(teamAttackRoute(e,target,h)||attackRoute(e,target,h,c)):null;
   if(at&&ctx.ready<=at.time+300)cands.push({kind:"attack",p:at,score:3+9*aggroNow-eta(e,at)*.55-back(at),until:1700,tid:target.id,tx:tc[0],ty:tc[1]});
@@ -1378,6 +1380,8 @@ function aiThink(e){
   if(!inward.blocked){setDir(e,null);e.supportIntent="안쪽 자리 기다림";if(dnow<Infinity){const esc=fleePlan(e,h,1);if(esc){setDir(e,esc.dir);e.supportIntent="위험 회피";}}return;}
  }
  const escaping=e.plan?.kind==="escape";
+ // 4-1) 바로 옆(2칸) 아이템은 공격보다 먼저 줍는다. 약할수록 3칸까지.
+ if(!escaping&&!(hasRoundLimit()&&G.sudden)){const near=bestItemRoute(e,hp,farmNeed(e)>.3?3:2);if(near){e.plan={kind:"item",x:near.x,y:near.y,until:G.t+2500};setDir(e,near.dir);e.supportIntent="아이템 확보";return;}}
  // 5) 즉시 공격
  if(target){
   const d=Math.abs(x-tc[0])+Math.abs(y-tc[1]),reach=Math.min(e.power,c.reach||99);
