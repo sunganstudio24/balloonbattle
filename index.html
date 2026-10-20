@@ -332,6 +332,21 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
 @media(max-height:820px) and (min-width:901px){#room>.sbody{padding-top:14px}.room2{gap:8px}.room-head h2{font-size:22px}.room-status{font-size:12px}.rpanel{padding:11px 13px}.rpanel h3{margin-bottom:7px}.rslot{min-height:178px;padding:6px 6px 7px}.rs-avatar{width:64px;height:68px}.rs-pedestal{margin-top:-12px}.rs-name{font-size:14px}.rs-add{min-height:66px}.rs-stamp{top:60px}.pal-face{width:46px;height:50px}.pal small{display:none}.pal{padding:6px 4px 5px}.rp-head{margin-bottom:7px}.rm-preview{max-width:170px}.room-maps button{padding:3px}.key-card{margin-top:8px;padding:6px 10px}.room-seat{margin-top:8px}.rset .rseg button{min-height:32px}.room-foot{padding-top:10px;padding-bottom:12px}.room-foot .go{padding:11px 24px}}
 @media(max-width:900px){.room-main{grid-template-columns:1fr}}
 @media(max-width:760px){.room-slots{grid-template-columns:repeat(2,minmax(0,1fr))}.rp-chars{gap:5px}.pal-face{width:44px;height:48px}.pal small{display:none}.room-head h2{font-size:21px}.rslot{min-height:0}.room-code-box b{font-size:24px}}
+/* 5인 이상 큰 맵(PC): 게임판 밖 UI를 줄여서 칸을 키운다. 화면이 세로 기준으로 꽉 차므로 위아래 여백을 먼저 줄인다. */
+@media(min-width:901px){
+#app.bigmap #playTop{min-height:40px;padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:4px}
+#app.bigmap #playTop .smallbtn{min-height:30px;padding:4px 9px}
+#app.bigmap .keyhint{display:none!important}
+#app.bigmap #arena{padding:6px 10px 6px 6px;gap:6px;grid-template-columns:minmax(0,1fr) calc(220px * var(--ui,1))}
+#app.bigmap #stage{padding:3px}
+#app.bigmap #hud{padding:10px}
+#app.bigmap #roster{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+#app.bigmap #roster .member{padding:4px 5px;min-height:0;margin:0;gap:4px;font-size:10px}
+#app.bigmap #roster .member-portrait,#app.bigmap #roster .member-portrait svg{width:24px;height:24px;flex:none}
+#app.bigmap #roster .bot-meta{display:none}
+#app.bigmap #roster .member-info small{font-size:9px}
+#app.bigmap #hud .subvalue,#app.bigmap #hud .rail-heading small,#app.bigmap #hud #stateLine,#app.bigmap #hud .block-rules{display:none}
+}
 </style>
 </head>
 <body>
@@ -374,7 +389,7 @@ button.rs-avatar{cursor:pointer}button.rs-avatar:hover{background:#ffffffaa;box-
    <p class="startup-notice" id="startupNotice" role="status">게임을 준비하고 있어요. 이 안내가 계속 보이면 게임을 실행할 수 없는 파일 미리보기 화면일 수 있습니다.</p>
    <div class="entry-hero" id="entryHero" aria-hidden="true"></div>
    <div class="entry-grid" id="entryGrid">
-    <button type="button" class="entry e-one" data-entry="one"><span class="e-art" id="artOne"></span><b>혼자 하기</b><small>나 + 봇 최대 3명<br>방향키 · Space · Ctrl</small></button>
+    <button type="button" class="entry e-one" data-entry="one"><span class="e-art" id="artOne"></span><b>혼자 하기</b><small>나 + 봇 최대 7명<br>방향키 · Space · Ctrl</small></button>
     <button type="button" class="entry e-two" data-entry="local"><span class="e-art" id="artTwo"></span><b>둘이 하기</b><small>한 키보드로 1P · 2P<br>1P R·D·F·G / 2P 방향키</small></button>
     <button type="button" class="entry e-host" data-entry="host"><span class="e-art"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 22 24 9l16 13v17a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2Z" fill="#ffd044" stroke="#8a5a00" stroke-width="2.4" stroke-linejoin="round"/><rect x="19" y="27" width="10" height="14" rx="2" fill="#fff" stroke="#8a5a00" stroke-width="2.4"/><path d="M31 6a9 9 0 0 1 9 9M31 1a14 14 0 0 1 14 14" fill="none" stroke="#1e88ff" stroke-width="2.6" stroke-linecap="round"/></svg></span><b>온라인 방 만들기</b><small>방 코드·초대 링크로<br>다른 컴퓨터 친구 부르기</small></button>
     <form class="entry e-join" id="joinForm" autocomplete="off"><span class="e-art"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="16" cy="24" r="9" fill="#8fd18a" stroke="#2f6f33" stroke-width="2.4"/><circle cx="16" cy="24" r="3" fill="#fff"/><path d="M25 24h18m-6 0v7m-6-7v5" fill="none" stroke="#2f6f33" stroke-width="3" stroke-linecap="round"/></svg></span><b>코드로 참가</b><div class="join-row"><input id="joinCode" maxlength="5" placeholder="방 코드" spellcheck="false" aria-label="참가할 방 코드"><button type="submit" class="rbtn">참가</button></div><small>친구가 알려준 5자리 코드</small></form>
@@ -545,7 +560,7 @@ const PLAYER_COLORS=["#63c9ff","#ff91a4","#ffc956","#bba1ff","#6fdc8c","#ff9f5a"
 const MAX_PLAYERS=8;
 const BOARD_BY_COUNT={2:[15,13],3:[17,13],4:[17,15],5:[19,15],6:[19,17],7:[21,17],8:[23,17]};
 function boardFor(mode,count){return mode==="stage"?[15,13]:BOARD_BY_COUNT[Math.max(2,Math.min(8,count))];}
-function setBoard(c,r){CFG.COLS=c;CFG.ROWS=r;CFG.ZONE_DEPTH=4+Math.floor((Math.min(c,r)-13)/2);}
+function setBoard(c,r){CFG.COLS=c;CFG.ROWS=r;document.getElementById("app")?.classList.toggle("bigmap",c>17);CFG.ZONE_DEPTH=4+Math.floor((Math.min(c,r)-13)/2);}
 function boardCenter(){return [(CFG.COLS-1)>>1,(CFG.ROWS-1)>>1];}
 function playerNo(e){return Number(e.id.slice(1))+1;}
 function playerLabel(e){return "P"+playerNo(e)+(mine(e)?" · 나":e.human?" · 친구":"")+" "+e.name;}
@@ -2530,8 +2545,11 @@ const ROOM={local:false,palTarget:0};
 function roomActive(){return ROOM.local||NET.role==="host"&&!!NET.myId||NET.role==="guest"&&!!NET.joined;}
 function showRoomScreen(){phase="menu";G=null;MATCH=null;toMenuView();$("menu").classList.add("hide");$("room").classList.remove("hide");$("room").querySelector(".sbody").scrollTop=0;renderRoom();}
 function hideRoomScreen(){if($("room").classList.contains("hide"))return;$("room").classList.add("hide");if(phase==="menu")$("menu").classList.remove("hide");}
+/* 대기실에 들어올 때마다 방 설정(봇 수·난이도·캐릭터, 팀, 판수, 시간, 맵, 방식)을 기본값으로 되돌린다. 내 캐릭터·조작·소리는 유지. */
+function resetRoomSettings(){Object.assign(sel,{form:"solo",bots:1,botSlots:[],teamPick:{},rounds:"3",timeLimit:"timed",map:0,diff:"normal",seats:1,p2char:-1});saveSettings();}
 function openLocalRoom(kind){
  if(NET.role)netLeave("");
+ resetRoomSettings();
  sel.mode=kind==="stage"?"stage":"battle";sel.play=kind==="local"?"local":"one";
  ROOM.local=true;ROOM.palTarget=0;netStatus("");saveSettings();syncMenu();showRoomScreen();SFX.unlock();SFX.ui();
 }
@@ -2661,7 +2679,7 @@ for(const [id,k] of [["prefCtrl","ctrl"],["prefSnd","snd"]])$(id).addEventListen
 $("entryGrid").addEventListener("click",ev=>{
  const b=ev.target.closest("button[data-entry]");if(!b)return;const k=b.dataset.entry;
  if(k==="one"||k==="local"){openLocalRoom(k);return;}
- if(k==="host"){ROOM.local=false;sel.mode="battle";sel.play="online";if(sel.seats!==2)sel.seats=1;syncMenu();SFX.unlock();SFX.ui();netHost();}
+ if(k==="host"){resetRoomSettings();ROOM.local=false;sel.mode="battle";sel.play="online";if(sel.seats!==2)sel.seats=1;syncMenu();SFX.unlock();SFX.ui();netHost();}
 });
 $("entryStage").addEventListener("click",()=>openLocalRoom("stage"));
 $("joinForm").addEventListener("submit",ev=>{ev.preventDefault();ROOM.local=false;sel.mode="battle";sel.play="online";syncMenu();SFX.unlock();netJoin($("joinCode").value);});
