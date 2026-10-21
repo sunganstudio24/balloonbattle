@@ -959,7 +959,7 @@ function tryPush(e,dir,dt){
   [...G.ents,...G.mobs].some(a=>a.alive&&Math.round(a.px)===nx&&Math.round(a.py)===ny)||G.zoneWalls?.has?.(key(nx,ny));
  if(blocked){e.pushT=0;return;}
  e.pushT=(e.pushT||0)+dt*1000;if(e.pushT<CFG.PUSH_MS)return;e.pushT=0;
- G.grid[ty][tx]=0;G.grid[ny][nx]=2;delete G.push[k];G.push[key(nx,ny)]=1;
+ G.grid[ty][tx]=0;G.grid[ny][nx]=2;delete G.push[k];G.push[key(nx,ny)]=1;(G.pushFx=G.pushFx||{})[key(nx,ny)]={dx,dy,t:G.visualT};
  if(G.deco){const d=G.deco[ty][tx];G.deco[ty][tx]=G.deco[ny][nx];G.deco[ny][nx]=d;}
  const hid=G.hidden?.get(k);if(hid){G.hidden.delete(k);G.hidden.set(key(nx,ny),hid);}
  invalidateDanger();
@@ -1008,7 +1008,7 @@ function applyItem(e,id){if(id==="bomb")e.maxBombs=Math.min(capB(e),e.maxBombs+1
 function pickItems(ms){
  for(let i=G.items.length-1;i>=0;i--){const it=G.items[i];it.t+=ms;
   for(const e of G.ents){
-   if(!e.alive||e.trapped||!itemUseful(e,it.id))continue;
+   if(!e.alive||e.trapped)continue;
    const c=cellOf(e);if(c[0]!==it.x||c[1]!==it.y)continue;
    // Enforce yielding on contact too, including escape paths that cross the item.
    if(yieldItemTo(e,it)){e.yieldUntil=G.t+700;continue;}
@@ -1181,7 +1181,7 @@ function statSum(e){return e.maxBombs+e.power+e.speedLv;}
 /* 파밍 필요도 0~1: 물풍선·물줄기·스피드가 각각 4에 못 미친 만큼. 약할수록 싸움보다 아이템을 챙긴다(크아 COM처럼 파밍 → 압박). */
 function farmNeed(e){return Math.min(1,(Math.max(0,4-e.maxBombs)+Math.max(0,4-e.power)+Math.max(0,capS(e)-1-e.speedLv))/6);}
 function itemUtility(e,it){
- if(!itemUseful(e,it.id))return 0;
+ if(!itemUseful(e,it.id))return RIDES[it.id]?0:2.5;
  switch(it.id){case"bomb":return 8+(capB(e)-e.maxBombs)*1.4;case"power":return 8+(capP(e)-e.power)*1.5;case"roller":return 10+(capS(e)-e.speedLv)*1.2;case"ultra":return 12+(capP(e)-e.power)*3;case"devil":return 14+(capS(e)-e.speedLv)*2.4;case"needle":return e.needles===0?24:10/(e.needles+1);case"shield":return e.shields===0?28:14/(e.shields+1);case"tele":return e.teleports===0?22:12/(e.teleports+1);default:{
   const r=RIDES[it.id];if(!r)return 0;
   // A blind turtle roll is not worth replacing a healthy mount or a fast build.
@@ -2071,7 +2071,7 @@ function drawBlockMark(x,y,hard){
  ctx.restore();
 }
 function drawHard(x,y,th){const mark=interior(x,y);blitCell(cellSprite("h"+G.mapIdx+(mark?"m":""),()=>{drawHardArt(0,0,th);hardOverlay(0,0);}),x,y);}
-function drawSoft(x,y,th,v){if(G.push?.[key(x,y)]){blitCell(cellSprite("pb"+G.mapIdx,()=>drawPushArt(0,0,th)),x,y);return;}blitCell(cellSprite("s"+G.mapIdx+"_"+v,()=>{drawSoftArt(0,0,th,v);}),x,y);}
+function drawSoft(x,y,th,v){if(G.push?.[key(x,y)]){const f=G.pushFx?.[key(x,y)],sp=cellSprite("pb"+G.mapIdx,()=>drawPushArt(0,0,th));let ox=0,oy=0;if(f){const p=Math.min(1,(G.visualT-f.t)/170);if(p>=1)delete G.pushFx[key(x,y)];else{const k=1-(1-(1-p))**0;const ease=1-(1-p)*(1-p);ox=-f.dx*(1-ease);oy=-f.dy*(1-ease);}}if(ox||oy){ctx.save();ctx.translate(ox*ts,oy*ts);blitCell(sp,x,y);ctx.restore();}else blitCell(sp,x,y);return;}blitCell(cellSprite("s"+G.mapIdx+"_"+v,()=>{drawSoftArt(0,0,th,v);}),x,y);}
 function drawBreakFx(){for(const f of G.breakFx){const k=f.t/300;ctx.save();ctx.globalAlpha=1-k;ctx.strokeStyle="#ffe4a2";ctx.lineWidth=Math.max(1,ts*.05);rrect((f.x+.08-k*.08)*ts,(f.y+.08-k*.08)*ts,ts*(.84+k*.16),ts*(.84+k*.16),ts*.1);ctx.stroke();ctx.restore();}}
 
 function drawHardArt(x,y,th){const px=x*ts,py=y*ts,m=ts*.025,rise=ts*.24,bx=px+m,by=py-rise+m,bw=ts-2*m,bh=ts-2*m+rise,top=bh-rise-ts*.05;ctx.fillStyle=th.hSide;rrect(bx,by,bw,bh,ts*.15);ctx.fill();ink();const face=ctx.createLinearGradient(bx,by,bx+bw,by+top);face.addColorStop(0,shade(th.hTop,18));face.addColorStop(.48,th.hTop);face.addColorStop(1,shade(th.hTop,-10));ctx.fillStyle=face;rrect(bx,by,bw,top,ts*.14);ctx.fill();const cx=bx+bw/2,cy=by+top/2;
@@ -2532,7 +2532,7 @@ $("guideBtn").addEventListener("click",()=>showOverlay("guide"));$("menuGuide").
    같은 컴퓨터의 탭끼리 BroadcastChannel로 연결한다(테스트용). */
 let roundSeq=0;
 const NET={role:null,seats:1,lobby:null,lastDirs:[],chat:[],peers:[],host:null,peer:null,myId:null,code:"",fx:[],lastSnap:0,staticRid:null,view:new Map(),lastM:"",lastGrid:"",rtt:80,pingAt:0,hist:[],lastDir:undefined,lastDirAt:0,bc:location.hash==="#local-net",joinTimer:null};
-const NET_SKIP_G=new Set(["dangerCache","parts","me","theme","bag","skyBag","skyBagLate","spiral","deco","zoneOrder","visualT","shake","zoneRankMap","specSpiral"]);
+const NET_SKIP_G=new Set(["dangerCache","pushFx","parts","me","theme","bag","skyBag","skyBagLate","spiral","deco","zoneOrder","visualT","shake","zoneRankMap","specSpiral"]);
 const NET_SKIP_E=new Set(["trail","lastCell","commitDir","commitUntil","targetId","targetUntil","thinkT","thinkCount","targetItem","breachTarget","decisionCell","yieldUntil","stuckBombAt","lastBombAt","netDir","netDir2","nextLapse","lapseUntil","plan","lastAtk","turnT","lastMoveDir","supportIntent"]);
 /* 판 도중에 안 바뀌는 캐릭터 정보는 라운드 첫 스냅샷에만 보낸다. */
 const NET_STATIC_E=["style","name","color","dark","light","base","persona","char","diff"];
