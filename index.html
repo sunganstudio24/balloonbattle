@@ -456,6 +456,11 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
 .cp-skin{display:flex;flex-direction:column;align-items:center;gap:2px;width:68px;padding:6px 4px;border:2px solid #c4dced;border-radius:12px;background:#f3faff;cursor:pointer}
 .cp-skin svg{width:44px;height:44px}.cp-skin small{font-size:11px;font-weight:800;color:#33536b}
 .cp-skin.on{border-color:#2f8be0;background:#dff0ff;box-shadow:0 0 0 2px #2f8be055}
+
+.vol-box{display:grid;gap:10px;padding:12px 16px!important}
+.vol-box label{display:grid;grid-template-columns:56px 1fr 34px;align-items:center;gap:10px;font-weight:800;font-size:14px}
+.vol-box input{width:100%;accent-color:#2f8be0}.vol-box b{text-align:right;font-variant-numeric:tabular-nums}
+.rp-skins{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}.rp-skins>b{font-size:12px;margin-right:2px}
 </style>
 </head>
 <body>
@@ -560,7 +565,7 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
       <div class="room-seat" id="roomSeatRow"><span>이 컴퓨터에서 할 사람</span><div class="rseg mini" id="roomSeats"><button type="button" data-v="1">1명</button><button type="button" data-v="2">2명 · 한 키보드</button></div></div>
       <div id="roomKeys"></div>
      </section>
-     <section class="rpanel r-palette"><div class="rp-head"><h3>캐릭터 선택</h3><button type="button" class="cp-open" data-open-cp="0">크게 보고 고르기</button><span class="rp-hint" id="palHint"></span><div class="rseg mini" id="palTarget" hidden><button type="button" data-v="0">1P 고르기</button><button type="button" data-v="1">2P 고르기</button></div></div><div class="rp-chars" id="palChars"></div></section>
+     <section class="rpanel r-palette"><div class="rp-head"><h3>캐릭터 선택</h3><button type="button" class="cp-open" data-open-cp="0">크게 보고 고르기</button><span class="rp-hint" id="palHint"></span><div class="rseg mini" id="palTarget" hidden><button type="button" data-v="0">1P 고르기</button><button type="button" data-v="1">2P 고르기</button></div></div><div class="rp-chars" id="palChars"></div><div class="rp-skins" id="palSkins"></div></section>
      <section class="rpanel room-chat" id="roomChat" hidden><h3>채팅 <small>대기실에서만</small></h3><div class="chat-log" id="chatLog" aria-live="polite"></div><form class="chat-row" id="chatForm" autocomplete="off"><input id="chatInput" maxlength="60" placeholder="메시지 입력 (Enter)" aria-label="채팅 메시지"><button type="submit" class="rbtn">보내기</button></form></section>
     </div>
     <div class="r-right">
@@ -581,6 +586,7 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
  <div id="charPick" class="cp" hidden role="dialog" aria-modal="true" aria-label="캐릭터 선택"><div class="cp-box"><header class="cp-head"><b id="cpTitle">캐릭터 선택</b><button type="button" class="cp-x" id="cpClose" aria-label="닫기">×</button></header><div class="cp-main"><div class="cp-grid" id="cpGrid"></div><div class="cp-info" id="cpInfo"></div></div><div class="cp-skins"><b>물풍선</b><div id="cpSkins"></div></div><footer class="cp-foot"><button type="button" class="cp-ok" id="cpOk">이 캐릭터로 결정</button></footer></div></div>
  <section class="screen hide" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle"><div class="dialog-shell"><div class="sbody" id="overlayBody">
   <div class="dialog-head"><div class="dialog-symbol" id="overlaySymbol"><span class="ui-icon" data-ui="pause"></span></div><div><h2 id="overlayTitle" tabindex="-1">잠깐 쉬어가기</h2><p class="hint" id="overlayNote"></p></div></div>
+  <div class="card vol-box" id="volBox" hidden><label><span>BGM</span><input type="range" id="volB" min="0" max="100"><b id="volBv"></b></label><label><span>효과음</span><input type="range" id="volS" min="0" max="100"><b id="volSv"></b></label></div>
   <div class="card" id="pauseInfo"></div>
   <div class="catalog-tabs" id="catalogTabs" aria-label="도감 분류" hidden><button class="sel" data-filter="all" aria-pressed="true">전체</button><button data-filter="stat" aria-pressed="false">성장</button><button data-filter="hold" aria-pressed="false">소지품</button><button data-filter="ride" aria-pressed="false">탈것</button><button data-filter="mob" aria-pressed="false">몬스터·보스</button></div>
   <div class="catalog" id="catalog" hidden></div>
@@ -737,7 +743,7 @@ function key(x,y){return y*CFG.COLS+x;}
 function grid(fill){return Array.from({length:CFG.ROWS},()=>Array.from({length:CFG.COLS},()=>typeof fill==="function"?fill():fill));}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
 function shade(hex,amt){const n=parseInt(hex.slice(1),16),cl=v=>Math.max(0,Math.min(255,v));return `rgb(${cl((n>>16&255)+amt)},${cl((n>>8&255)+amt)},${cl((n&255)+amt)})`;}
-const SFX=(()=>{let ac=null,master=null,sfxBus=null,on=true,bgmOn=true,want=null;function boot(){if(ac!==null)return ac;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return ac=false;try{ac=new AC();master=ac.createGain();master.gain.value=.22;master.connect(ac.destination);sfxBus=ac.createGain();sfxBus.gain.value=on?1:0;sfxBus.connect(master);}catch{ac=false;}return ac;}
+const SFX=(()=>{let volS=.5,volB=1,bgmBus=null;try{volS=(+(localStorage.getItem("bbVolS")??50))/100;volB=(+(localStorage.getItem("bbVolB")??70))/70;}catch(e){}let ac=null,master=null,sfxBus=null,on=true,bgmOn=true,want=null;function boot(){if(ac!==null)return ac;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return ac=false;try{ac=new AC();master=ac.createGain();master.gain.value=.22;master.connect(ac.destination);sfxBus=ac.createGain();sfxBus.gain.value=on?volS:0;sfxBus.connect(master);bgmBus=ac.createGain();bgmBus.gain.value=volB;bgmBus.connect(master);}catch{ac=false;}return ac;}
  function tone(f,f1,dur=.13,type="sine",delay=0){if(!on)return;const c=boot();if(!c||c.state!=="running")return;const t=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.22,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g);g.connect(sfxBus);o.onended=()=>{o.disconnect();g.disconnect();};o.start(t);o.stop(t+dur+.02);}
  function noise(dur=.25){if(!on)return;const c=boot();if(!c||c.state!=="running")return;const b=c.createBuffer(1,Math.floor(c.sampleRate*dur),c.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*Math.pow(1-i/a.length,2)*.32;const s=c.createBufferSource(),f=c.createBiquadFilter();f.type="lowpass";f.frequency.value=950;s.buffer=b;s.connect(f);f.connect(sfxBus);s.onended=()=>{s.disconnect();f.disconnect();};s.start();}
 
@@ -809,11 +815,11 @@ const SFX=(()=>{let ac=null,master=null,sfxBus=null,on=true,bgmOn=true,want=null
  function bgmTick(){if(!bg||!ac||ac.state!=="running")return;const th=bg.th;if(bg.next<ac.currentTime-.05)bg.next=ac.currentTime+.05;
   while(bg.next<ac.currentTime+.2){const base=60/(th.bpm*(bg.fast?1.15:1))/4;let sp=base;if(th.swing)sp=bg.i%2===0?base*2*th.swing:base*2*(1-th.swing);bg.sp=base;stepAt(bg.i);bg.i++;bg.next+=sp;}}
  function bgm(kind){want=kind;if(!bgmOn)return;const c=boot();if(!c)return;const th=THEMES[kind]||THEMES.rock;if(bg&&bg.kind===kind)return;bgmStop();
-  const out=c.createGain();out.gain.value=.55;out.connect(master);const ld=c.createGain(),dl=c.createDelay(1),fb=c.createGain(),wet=c.createGain();dl.delayTime.value=60/th.bpm*.75;fb.gain.value=.28;wet.gain.value=.22;ld.connect(out);ld.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(out);
+  const out=c.createGain();out.gain.value=.85;out.connect(bgmBus);const ld=c.createGain(),dl=c.createDelay(1),fb=c.createGain(),wet=c.createGain();dl.delayTime.value=60/th.bpm*.75;fb.gain.value=.28;wet.gain.value=.22;ld.connect(out);ld.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(out);
   bg={kind,th,out,lead:ld,song:compose(th),i:0,next:c.currentTime+.12,sp:.1,timer:setInterval(bgmTick,40),fast:false};}
  function bgmStop(){if(!bg)return;clearInterval(bg.timer);try{bg.out.gain.setTargetAtTime(0,ac.currentTime,.06);const o=bg.out;setTimeout(()=>o.disconnect(),500);}catch{}bg=null;}
  function brk(kind){if(kind==="snow"){tone(900,500,.07,"sine");noise(.08);}else if(kind==="crate"){tone(240,110,.07,"square");noise(.1);}else if(kind==="tree"){noise(.14);tone(330,200,.06,"triangle");}else if(kind==="crystal"){tone(1500,2100,.09,"triangle");tone(1900,0,.12,"sine",.04);}else noise(.1);}
- const seq=(fs,type="triangle")=>fs.forEach((f,i)=>tone(f,0,.18,type,i*.1));return {bgm,bgmStop,bgmFast(v){if(bg)bg.fast=v;},brk,ghost(){seq([880,660,990],"sine");},curse(){seq([300,240,180],"square");},unlock(){const c=boot();if(c&&c.state==="suspended")c.resume().catch(()=>{});if(bgmOn&&want&&!bg)bgm(want);},set(v){on=v;if(sfxBus)sfxBus.gain.value=v?1:0;},setBgm(v){bgmOn=v;if(!v)bgmStop();else if(want)bgm(want);},bomb(){tone(430,170,.09);},boom(){noise();tone(190,44,.3);},item(){seq([680,1020]);},big(){seq([520,780,1180]);},trap(){tone(620,210,.24);},save(){tone(430,900,.17,"triangle");},die(){tone(300,58,.45,"sawtooth");},hit(){tone(165,110,.1,"square");},pop(){tone(900,1500,.08,"triangle");},ride(){seq([330,440,550,660]);},clear(){seq([523,659,784,1047]);},fail(){seq([392,330,262],"sawtooth");},boss(){noise(.5);tone(110,60,.6,"sawtooth");},shot(){tone(900,400,.12);},warn(){seq([320,320],"square");},ui(){tone(820,0,.03,"square");}};})();
+ const seq=(fs,type="triangle")=>fs.forEach((f,i)=>tone(f,0,.18,type,i*.1));return {bgm,bgmStop,bgmFast(v){if(bg)bg.fast=v;},brk,ghost(){seq([880,660,990],"sine");},curse(){seq([300,240,180],"square");},unlock(){const c=boot();if(c&&c.state==="suspended")c.resume().catch(()=>{});if(bgmOn&&want&&!bg)bgm(want);},set(v){on=v;if(sfxBus)sfxBus.gain.value=v?volS:0;},vol(b,s2){volB=b;volS=s2;if(bgmBus)bgmBus.gain.value=b;if(sfxBus)sfxBus.gain.value=on?s2:0;},setBgm(v){bgmOn=v;if(!v)bgmStop();else if(want)bgm(want);},bomb(){tone(430,170,.09);},boom(){noise();tone(190,44,.3);},item(){seq([680,1020]);},big(){seq([520,780,1180]);},trap(){tone(620,210,.24);},save(){tone(430,900,.17,"triangle");},die(){tone(300,58,.45,"sawtooth");},hit(){tone(165,110,.1,"square");},pop(){tone(900,1500,.08,"triangle");},ride(){seq([330,440,550,660]);},clear(){seq([523,659,784,1047]);},fail(){seq([392,330,262],"sawtooth");},boss(){noise(.5);tone(110,60,.6,"sawtooth");},shot(){tone(900,400,.12);},warn(){seq([320,320],"square");},ui(){tone(820,0,.03,"square");}};})();
 function freeze(ms){if(G)G.freeze=Math.max(G.freeze,reducedMotion?0:ms);}
 /* 화면 흔들림은 뺐다(사용자 요청). 호출부는 그대로 두고 아무것도 하지 않는다. */
 function kick(mag){}
@@ -1869,7 +1875,7 @@ function stepTraps(ms){
 
 function stepSky(ms){for(let i=G.falls.length-1;i>=0;i--){const f=G.falls[i];f.t+=ms;if(f.t<CFG.SKY_FALL)continue;G.falls.splice(i,1);if(!bombAt(f.x,f.y)&&!G.blasts.some(b=>b.cells.some(c=>c.x===f.x&&c.y===f.y))&&addItem(f.x,f.y,f.id)){spark(f.x+.5,f.y+.7,9,"#ffffff");SFX.hit();}}
  if(G.mode==="stage"||hasRoundLimit()&&G.roundMs>=CFG.ZONE_START)return;
- G.skyT-=ms;if(G.skyT>0)return;G.skyGap=Math.max(CFG.SKY_MIN,G.skyGap-CFG.SKY_STEP);G.skyT=G.skyGap;if(G.items.length+G.falls.length>=CFG.SKY_MAX)return;const spots=[];for(let y=1;y<CFG.ROWS-1;y++)for(let x=1;x<CFG.COLS-1;x++)if(G.grid[y][x]===0&&!bombAt(x,y)&&!G.items.some(it=>it.x===x&&it.y===y)&&!G.falls.some(f=>f.x===x&&f.y===y))spots.push([x,y]);if(spots.length){const [x,y]=spots[Math.random()*spots.length|0];G.falls.push({x,y,id:drawFromBag(true),t:0});}}
+ G.skyT-=ms;if(G.skyT>0)return;G.skyGap=Math.max(CFG.SKY_MIN,G.skyGap-CFG.SKY_STEP);G.skyT=G.skyGap;if(G.items.length+G.falls.length>=CFG.SKY_MAX)return;const spots=[];for(let y=1;y<CFG.ROWS-1;y++)for(let x=1;x<CFG.COLS-1;x++)if(G.grid[y][x]===0&&!G.bush?.[key(x,y)]&&!bombAt(x,y)&&!G.items.some(it=>it.x===x&&it.y===y)&&!G.falls.some(f=>f.x===x&&f.y===y))spots.push([x,y]);if(spots.length){const [x,y]=spots[Math.random()*spots.length|0];G.falls.push({x,y,id:drawFromBag(true),t:0});}}
 /* 시간 제한 없는 판에서 사람이 모두 탈락하면(봇끼리만 남으면) 끝없이 이어지지 않게
    8초 뒤부터 바깥부터 벽이 차례로 떨어진다(0.9초 예고). 사람이 한 명이라도 살아 있으면 없다. */
 function spectateWalls(){return !!G&&G.mode==="battle"&&!hasRoundLimit()&&!G.over&&!G.ents.some(e=>e.alive&&e.human);}
@@ -2467,7 +2473,7 @@ function inventoryText(e){
 function lockBackground(v){for(const id of ["playTop","hud","ctrl","menu","room","result","stage","keyHint"])$(id).inert=v;}
 function showOverlay(kind="pause",id=null){
  if(phase!=="paused"&&!overlayOpen()){overlayReturn=phase;focusReturn=document.activeElement;const live=phase==="play"&&!!G&&(NET.role==="host"&&!!MATCH?.online||NET.role==="guest");if(!live)phase="paused";clearInputs();}
- const game=!!G&&overlayReturn==="play",guide=kind==="guide",how=kind==="how";
+ const game=!!G&&overlayReturn==="play",guide=kind==="guide",how=kind==="how";$("volBox").hidden=guide||how||kind==="actor";volRender();
  setText("overlayTitle",guide?"도감":how?"이렇게 놀아요":kind==="actor"?"플레이어 정보":"잠깐 쉬어가기");setText("overlayNote",game?(phase==="play"?"온라인 대전은 멈추지 않아요. 얼른 돌아오세요!":"지금은 일시정지 중이에요."):guide?"같은 아이콘이 게임판에도 나타납니다.":"물풍선을 놓고, 모퉁이 뒤로 피하세요.");
  $("overlaySymbol").innerHTML='<span class="ui-icon">'+uiSVG(guide?"book":how?"help":kind==="actor"?"person":"pause")+'</span>';
  $("catalog").hidden=!guide;$("catalogTabs").hidden=!guide;$("pauseInfo").hidden=!game||guide||how;$("guideRules").hidden=!guide;$("howToContent").hidden=!how;$("overlayHelp").hidden=false;
@@ -2935,7 +2941,7 @@ function renderRoom(){
  }
  $("roomSlots").innerHTML=cells.join("");$("roomSlots").classList.toggle("solo-stage",stage);
  setText("roomCount",stage?"혼자 도전":`${st.list.length}/${MAX_PLAYERS} · 사람 ${st.list.filter(p=>!p.isBot).length} · 봇 ${st.list.filter(p=>p.isBot).length}`);
- const c1=sel.char,c2=sel.p2char;
+ {const tg=roomSeatsHere()===2?ROOM.palTarget:0,cur=tg===1?mySkin2:mySkin;$("palSkins").innerHTML="<b>물풍선</b>"+SKINS.map((k,i)=>`<button type="button" class="cp-skin${cur===i?" on":""}" data-pskin="${i}" aria-pressed="${cur===i}">${skinSVG(i)}<small>${k.name}</small></button>`).join("");}const c1=sel.char,c2=sel.p2char;
  $("palChars").innerHTML=[0,1,2,3,4,5,6,7,-1].map(i=>{const on1=c1===i,on2=two&&c2===i;return `<button type="button" class="pal${on1?" p1":""}${on2?" p2":""}" data-char="${i}" title="${i<0?"시작할 때 무작위로 정해져요":CHARS[i].tag}" aria-pressed="${on1||on2}"><span class="pal-face">${i<0?randomCharacterSVG():avatarSVG(i,"down",true)}</span><b>${i<0?"랜덤":CHARS[i].name}</b><small>${i<0?"무작위":CHARS[i].strong}</small>${on1?'<i class="pm pm1">1P</i>':""}${on2?'<i class="pm pm2">2P</i>':""}</button>`;}).join("");
  $("palTarget").hidden=!two;$("palTarget").querySelectorAll("button").forEach(b=>b.classList.toggle("on",Number(b.dataset.v)===ROOM.palTarget));
  setText("palHint",two?"왼쪽 클릭 1P · 오른쪽 클릭 2P":"눌러서 내 캐릭터 고르기");
@@ -3013,6 +3019,7 @@ document.addEventListener("keydown",ev=>{if($("charPick").hidden)return;if(ev.ke
  else if(ev.key==="Enter"&&!ev.target.closest?.(".cp-x")){ev.preventDefault();pickChar(CP.target,CP.sel);closeCharPick();}},true);
 document.addEventListener("click",ev=>{const k=ev.target.closest("[data-skin]");if(!k)return;CP.skin=+k.dataset.skin;cpRender();SFX.ui();});
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-open-cp]");if(!b)return;ev.preventDefault();openCharPick(Number(b.dataset.openCp)||0);});
+$("palSkins").addEventListener("click",ev=>{const b=ev.target.closest("[data-pskin]");if(!b)return;const v=+b.dataset.pskin;if((roomSeatsHere()===2?ROOM.palTarget:0)===1)mySkin2=v;else mySkin=v;saveSkins();if(NET.role==="guest")netCfg();else if(NET.role==="host")netLobby();renderRoom();SFX.ui();});
 $("palChars").addEventListener("click",ev=>{const b=ev.target.closest("[data-char]");if(!b)return;pickChar(roomSeatsHere()===2?ROOM.palTarget:0,Number(b.dataset.char));});
 $("palChars").addEventListener("contextmenu",ev=>{const b=ev.target.closest("[data-char]");if(!b)return;ev.preventDefault();if(roomSeatsHere()===2)pickChar(1,Number(b.dataset.char));});
 $("palTarget").addEventListener("click",ev=>{const b=ev.target.closest("button[data-v]");if(!b)return;ROOM.palTarget=Number(b.dataset.v);renderRoom();SFX.ui();});
@@ -3032,6 +3039,12 @@ function renderLobbyArt(){
 let bgmPref="on";try{bgmPref=localStorage.getItem("bbBgm")||"on"}catch(e){}
 function renderPrefs(){$("prefBgm")?.querySelectorAll("button").forEach(b=>{const on=b.dataset.v===bgmPref;b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on));});for(const [id,k] of [["prefCtrl","ctrl"],["prefSnd","snd"]])$(id).querySelectorAll("button").forEach(b=>{const on=b.dataset.v===sel[k];b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on));});}
 for(const [id,k] of [["prefCtrl","ctrl"],["prefSnd","snd"]])$(id).addEventListener("click",ev=>{const b=ev.target.closest("button[data-v]");if(!b)return;sel[k]=b.dataset.v;saveSettings();syncMenu();renderPrefs();SFX.unlock();SFX.ui();});
+
+let volBpct=70,volSpct=50;try{volBpct=+(localStorage.getItem("bbVolB")??70);volSpct=+(localStorage.getItem("bbVolS")??50);}catch(e){}
+function volRender(){$("volB").value=volBpct;$("volS").value=volSpct;setText("volBv",volBpct);setText("volSv",volSpct);}
+function volApply(){SFX.vol(volBpct/70,volSpct/100);try{localStorage.setItem("bbVolB",String(volBpct));localStorage.setItem("bbVolS",String(volSpct));}catch(e){}volRender();}
+$("volB").addEventListener("input",ev=>{volBpct=+ev.target.value;volApply();});
+$("volS").addEventListener("input",ev=>{volSpct=+ev.target.value;volApply();SFX.item();});
 $("prefBgm").addEventListener("click",ev=>{const b=ev.target.closest("button[data-v]");if(!b)return;bgmPref=b.dataset.v;try{localStorage.setItem("bbBgm",bgmPref)}catch(e){}SFX.setBgm(bgmPref==="on");SFX.unlock();renderPrefs();});
 SFX.setBgm(bgmPref==="on");SFX.set(sel.snd==="on");SFX.bgm("lobby");
 for(const t of ["pointerdown","keydown"])window.addEventListener(t,()=>SFX.unlock(),{passive:true});
