@@ -435,13 +435,20 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
 /* PC: 판과 패널을 붙여 가운데 정렬, 패널은 좁게, 위·아래 띠는 얇게 */
 #app:not(.touch) #arena{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:center;min-height:0;flex:1 1 auto;align-items:stretch;column-gap:10px;padding:6px 10px!important}
 #app:not(.touch) #stage{flex:none!important;padding:4px!important}
-#app:not(.touch) #hud{width:212px;flex:none;order:2!important;align-self:stretch;overflow-y:auto;padding:10px!important;zoom:1!important;max-height:100%}
+#app:not(.touch) #hud{width:250px;flex:none;order:2!important;align-self:stretch;overflow-y:auto;padding:10px!important;zoom:var(--hz,1)!important;max-height:none!important;height:calc((100vh - 84px) / var(--hz,1))!important;align-self:center!important}
 #app:not(.touch) #playTop{min-height:0!important;padding-top:5px!important;padding-bottom:5px!important;zoom:1!important}
 #app:not(.touch) #playTop .smallbtn{min-height:30px!important;padding:5px 9px!important}
 #app:not(.touch) .keyhint{zoom:1!important;padding:3px 10px!important;font-size:10px!important}
 #app:not(.touch) #hud .stat,#app:not(.touch) #hud .islot{min-height:50px!important}
 #app:not(.touch) #hud .member{padding:6px 8px!important}
 #app:not(.touch) #hud #stateLine{font-size:10px!important;padding-top:8px!important;margin-top:8px!important}
+
+#hudTimer{display:none}
+#app:not(.touch) #hudTimer:not(:empty){display:flex;align-items:center;justify-content:space-between;background:#0b2550;border:2px solid #5d8fdc;border-radius:12px;padding:6px 12px;margin-bottom:10px;color:#ffe45c;font:900 20px/1 system-ui,sans-serif;letter-spacing:1px}
+#hudTimer small{font-size:11px;color:#9cc8ff;letter-spacing:2px}
+#hudTimer .round-clock{background:none!important;border:0!important;color:#ffe45c!important;font-size:20px!important;padding:0!important}
+#app:not(.touch) #playTop .round-clock{display:none}
+#app:not(.touch) #arena{padding:6px 14px!important;column-gap:14px!important}
 </style>
 </head>
 <body>
@@ -454,6 +461,7 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
  <main id="arena">
   <div id="stage"><canvas id="cv" role="img" aria-label="물풍선 배틀 게임판. 방향키로 이동하고 스페이스로 물풍선을 놓습니다."></canvas></div>
   <aside id="hud" hidden aria-label="팀 상태와 내 아이템">
+   <div id="hudTimer"></div>
    <div class="rail-heading">플레이어 <small>눌러서 정보 보기</small></div>
    <div id="roster" aria-label="참가자와 팀 상태"></div>
    <div id="duoHud" hidden aria-label="1P·2P 상태"></div>
@@ -491,7 +499,7 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
    </div>
    <p class="lobby-status" id="lobbyStatus" role="status"></p>
    <button type="button" class="entry-stage" id="entryStage"><span class="ui-icon" data-ui="flag"></span><b>스테이지 모드</b><small>몬스터와 보스를 물리치는 혼자 모험</small><span class="ui-icon" data-ui="arrow"></span></button>
-   <div class="lobby-prefs"><div><span>조작</span><div class="rseg mini" id="prefCtrl"><button type="button" data-v="auto">자동</button><button type="button" data-v="key">키보드</button><button type="button" data-v="touch">터치</button></div></div><div><span>소리</span><div class="rseg mini" id="prefSnd"><button type="button" data-v="on">켜기</button><button type="button" data-v="off">끄기</button></div></div></div>
+   <div class="lobby-prefs"><div><span>조작</span><div class="rseg mini" id="prefCtrl"><button type="button" data-v="auto">자동</button><button type="button" data-v="key">키보드</button><button type="button" data-v="touch">터치</button></div></div><div><span>물풍선</span><div class="rseg mini" id="prefSkin"><button type="button" data-v="0">기본</button><button type="button" data-v="1">딸기</button><button type="button" data-v="2">별</button><button type="button" data-v="3">검정</button></div></div><div><span>소리</span><div class="rseg mini" id="prefSnd"><button type="button" data-v="on">켜기</button><button type="button" data-v="off">끄기</button></div></div></div>
    <div id="legacyMenu" hidden>
   <div class="sbody"><div class="lobby-shell">
    
@@ -612,7 +620,7 @@ window.addEventListener("error",()=>{if(!gameUiReady){const notice=document.getE
  실제 브라우저 레이아웃·기기 터치감·WebAudio 출력은 별도 실기 확인이 필요.
  */
 /* 단일 파일 / 외부 의존성 없음. 좌표는 칸 단위, 시간은 ms(이동만 초). */
-const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.52,MAX_SPEED:5,MAX_BOMB:10,MAX_POWER:7,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:6000,MOB_DASH:4.6,MOB_REST:950,STAGE_POP:1400,RESPAWN_DELAY:1300,RESPAWN_INVULN:2600,STALL_HINT:40000,EGG_HATCH:5000,STAGE_DROP:.14,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,PUSH_MS:230,BUSH_RATE:.07,PUSH_RATE:.10,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:12000,ZONE_PLAN:16000};
+const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:2.53,SPD_STEP:.52,MAX_SPEED:6,MAX_BOMB:10,MAX_POWER:9,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:6000,MOB_DASH:4.6,MOB_REST:950,STAGE_POP:1400,RESPAWN_DELAY:1300,RESPAWN_INVULN:2600,STALL_HINT:40000,EGG_HATCH:5000,STAGE_DROP:.14,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,PUSH_MS:230,BUSH_RATE:.07,PUSH_RATE:.10,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:12000,ZONE_PLAN:16000};
 const MAPS=[
  {name:"빙하",density:.87,holes:.02,sw:"#7ecbea",f1:"#e3f7fc",f2:"#cceaf4",grid:"rgba(30,90,130,.07)",hTop:"#65c9ee",hSide:"#2389b8",hEdge:"#c5f6ff",sTop:"#ffffff",sSide:"#b7d6e7",sEdge:"#f0fbff",hard:"ice",soft:"snow"},
  {name:"사막",density:.89,holes:.13,sw:"#e8b654",f1:"#fbe8bb",f2:"#f1d79b",grid:"rgba(120,80,20,.07)",hTop:"#d88f56",hSide:"#995530",hEdge:"#f3c18d",sTop:"#f2bf71",sSide:"#b07836",sEdge:"#ffe3ac",hard:"brick",soft:"crate"},
@@ -625,36 +633,34 @@ const MAPS=[
  {name:"광산",lay:"scatter",density:.82,holes:0,sw:"#6fd3e8",f1:"#e2cfb4",f2:"#d4bd9c",grid:"rgba(90,60,30,.08)",hTop:"#8d8173",hSide:"#5a5046",hEdge:"#c9bfb3",sTop:"#6fd3e8",sSide:"#2f8ea6",sEdge:"#d4f6ff",hard:"rock",soft:"crystal"}
 ];
 const CHARS=[
- /* 크아처럼 캐릭터마다 최대치가 다르다(maxB 물풍선·maxP 물줄기·maxS 스피드). 스피드 내부 1단계 = 화면 표시 5.
-    네 캐릭터 모두 나무위키 크아 수치(우니·모스는 문서 옛 판 기준). */
- {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:1,needles:0,maxB:6,maxP:7,maxS:5,strong:"스피드",tag:"스피드 5단계까지(크아 9). 물풍선은 6개까지."},
- {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:7,maxS:3,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 3단계까지(크아 7)."},
- {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:1,needles:0,maxB:6,maxP:7,maxS:4,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6개 · 스피드 4단계까지."},
- {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:5,maxS:4,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 4단계 · 물줄기는 5칸까지."},
- /* 이 게임 오리지널 캐릭터 4명 */
- {name:"토토",color:"#ff8a3d",style:0,bombs:1,power:1,speed:1,needles:0,maxB:7,maxP:6,maxS:5,strong:"균형",tag:"여우 후드. 스피드 5단계까지, 물풍선 7 · 물줄기 6."},
- {name:"몽이",color:"#7cc9f5",style:1,bombs:2,power:1,speed:1,needles:0,maxB:9,maxP:5,maxS:3,strong:"물풍선 2개",tag:"구름 모자. 물풍선 2개로 시작, 9개까지. 물줄기는 5칸이 끝."},
- {name:"루루",color:"#a77be0",style:2,bombs:1,power:2,speed:1,needles:0,maxB:5,maxP:8,maxS:3,strong:"물줄기 최장",tag:"고양이 귀. 물줄기 8칸까지. 물풍선은 5개가 끝."},
- {name:"단단",color:"#8e98a8",style:3,bombs:1,power:1,speed:1,needles:0,shields:1,maxB:8,maxP:6,maxS:3,strong:"방패 1개",tag:"곰 헬멧. 방패 1개로 시작. 물풍선 8 · 물줄기 6."}
+ /* 크아 기본 캐릭터 8명(나무위키 수치). 물풍선·물줄기는 크아 그대로, 스피드 단계 = 크아 속도 − 3. 케피는 출처 확인 못 해 잠정값. */
+ {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:2,needles:0,maxB:6,maxP:7,maxS:6,strong:"스피드",tag:"스피드 최강(크아 9). 물풍선은 6개까지."},
+ {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:2,needles:0,maxB:10,maxP:7,maxS:4,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 제일 느림(크아 7)."},
+ {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:2,needles:0,maxB:6,maxP:7,maxS:5,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6 · 스피드 크아 8."},
+ {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:2,needles:0,maxB:8,maxP:5,maxS:5,strong:"물풍선",tag:"물풍선 8 · 스피드 크아 8. 물줄기는 5칸이 끝."},
+ {name:"디지니",color:"#ff8a3d",style:0,bombs:2,power:1,speed:1,needles:0,maxB:7,maxP:9,maxS:5,strong:"물줄기 최장",tag:"물풍선 2개로 시작. 물줄기 9칸까지. 처음엔 느림."},
+ {name:"마리드",color:"#7cc9f5",style:1,bombs:2,power:1,speed:1,needles:0,maxB:9,maxP:6,maxS:5,strong:"물풍선 2개",tag:"물풍선 2개로 시작, 9개까지. 물줄기 6칸."},
+ {name:"에띠",color:"#a77be0",style:2,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:8,maxS:5,strong:"후반형",tag:"물풍선 10 · 물줄기 8. 처음엔 느림."},
+ {name:"케피",color:"#8e98a8",style:3,bombs:1,power:1,speed:2,needles:0,maxB:6,maxP:6,maxS:6,strong:"스피드",tag:"물풍선·물줄기는 적지만 빠름(잠정 수치)."}
 ];
 const ITEMS=[
  {id:"bomb",kind:"stat",w:30,sw:14,color:"#4aa8ff",label:"물풍선 +1",desc:"동시 설치 개수 +1. 최대치는 캐릭터마다 다름(6~10개)."},
- {id:"power",kind:"stat",w:30,sw:14,color:"#ff9330",label:"물줄기 +1",desc:"물줄기 길이 +1칸. 최대치는 캐릭터마다 다름(5~7칸)."},
- {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +1단계. 최대치는 캐릭터마다 다름(3~5단계, 크아 기준 7~9)."},
+ {id:"power",kind:"stat",w:30,sw:14,color:"#ff9330",label:"물줄기 +1",desc:"물줄기 길이 +1칸. 최대치는 캐릭터마다 다름(5~9칸)."},
+ {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +1단계. 최대치는 캐릭터마다 다름(4~6단계, 크아 기준 7~9)."},
  {id:"needle",kind:"hold",w:7,sw:9,color:"#7d95ac",label:"바늘",desc:"갇힌 뒤 아이템 키(Ctrl)를 눌러 탈출. 최대 3개."},
  {id:"shield",kind:"hold",w:7,sw:9,color:"#ffd21f",label:"방패",desc:"피격을 자동으로 1회 방어. 최대 3개."},
  {id:"tele",kind:"hold",w:3,sw:7,color:"#b278ff",label:"순간이동",desc:"안전한 빈 칸으로 이동. 갇히지 않았을 때 아이템 키(Ctrl). 최대 3개."},
  {id:"ultra",kind:"stat",w:1,sw:6,color:"#a45cff",label:"울트라 물풍선",desc:"물줄기를 즉시 캐릭터 최대치로."},
  {id:"devil",kind:"stat",w:1,sw:6,color:"#ff2f5e",label:"붉은 악마",desc:"스피드를 즉시 캐릭터 최대치로."},
- {id:"owl",kind:"ride",w:1,sw:7,color:"#b895e3",label:"부엉이",desc:"탑승 중 속도 4단계 고정. 피격 1회 방어. 내리면 원래 속도로 돌아옵니다."},
+ {id:"owl",kind:"ride",w:1,sw:7,color:"#b895e3",label:"부엉이",desc:"탑승 중 속도 5단계 고정. 피격 1회 방어. 내리면 원래 속도로 돌아옵니다."},
  {id:"tank",kind:"ride",w:1,sw:6,color:"#9fae72",label:"탱크",desc:"탑승 중 물풍선이 캐릭터 최대치로. 피격 2회 방어."},
- {id:"turtle",kind:"ride",w:1,sw:6,color:"#6fbf7a",label:"복불복 거북이",desc:"먹는 순간 추첨: 느림 75% (속도 1) / 빠름 25% (속도 5). 드랍 모습은 동일. 피격 1회 방어, 연료 제한 없음."}
+ {id:"turtle",kind:"ride",w:1,sw:6,color:"#6fbf7a",label:"복불복 거북이",desc:"먹는 순간 추첨: 느림 75% (속도 1) / 빠름 25% (속도 6). 드랍 모습은 동일. 피격 1회 방어, 연료 제한 없음."}
 ];
 const ITEM_BY=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 /* 스테이지는 혼자 하는 모험이라 생존 아이템(바늘·방패) 비중을 조금 높인다. */
 const STAGE_ITEM_W={bomb:26,power:24,roller:20,needle:11,shield:10,tele:3,owl:2};
 const RIDES={
- owl:{name:"부엉이",color:"#b895e3",hp:1,speed:4,bombMax:false},
+ owl:{name:"부엉이",color:"#b895e3",hp:1,speed:5,bombMax:false},
  tank:{name:"탱크",color:"#9fae72",hp:2,speed:null,bombMax:true},
  turtle:{name:"거북이",color:"#6fbf7a",hp:1,speed:null,bombMax:false}
 };
@@ -667,7 +673,7 @@ function setBoard(c,r){CFG.COLS=c;CFG.ROWS=r;document.getElementById("app")?.cla
 function boardCenter(){return [(CFG.COLS-1)>>1,(CFG.ROWS-1)>>1];}
 function playerNo(e){return Number(e.id.slice(1))+1;}
 function playerLabel(e){return "P"+playerNo(e)+(mine(e)?" · 나":e.human?" · 친구":"")+" "+e.name;}
-function rideName(e){return e.ride==="turtle"?(e.rideSpeed===5?"쾌속 거북이":"느림 거북이"):rideOf(e)?.name||"";}
+function rideName(e){return e.ride==="turtle"?(e.rideSpeed===6?"쾌속 거북이":"느림 거북이"):rideOf(e)?.name||"";}
 function standings(){return MATCH.players.map(p=>({...p,wins:MATCH.scores[p.id]||0})).sort((a,b)=>b.wins-a.wins||a.slot-b.slot);}
 
 /* 스테이지 몬스터. spd는 초당 칸 수(플레이어 기본 속도 1단계 = 3.05칸). 초반 몬스터는 플레이어보다 느리다.
@@ -812,7 +818,7 @@ function createMatchPlayers(count,humans=1,form=sel.form){
   const hs=slot<humans?seats[slot]:null,opt=botOption(slot),choice=hs?hs.char:opt.char;
   const char=validCharacter(choice)&&choice>=0?choice:Math.floor(Math.random()*CHARS.length);
   // 슬롯마다 독립 추첨한다. 앞서 정해진 캐릭터·성향을 후보에서 빼지 않는다.
-  return {id:"e"+slot,slot,char,name:CHARS[char].name,human:!!hs,ctl:hs?hs.ctl:null,netId:hs?.netId||null,seat:hs?.seat||0,team:form==="team"?teamOf(slot,count,seats):null,diff:hs?null:opt.diff,persona:hs?1:Math.floor(Math.random()*PERSONA.length)};
+  return {id:"e"+slot,slot,char,skin:hs&&slot===0?mySkin:(slot*3+1)%4,name:CHARS[char].name,human:!!hs,ctl:hs?hs.ctl:null,netId:hs?.netId||null,seat:hs?.seat||0,team:form==="team"?teamOf(slot,count,seats):null,diff:hs?null:opt.diff,persona:hs?1:Math.floor(Math.random()*PERSONA.length)};
  });
 }
 function hasRoundLimit(){return !!MATCH&&MATCH.mode==="battle"&&MATCH.roundLimit>0;}
@@ -832,7 +838,7 @@ function startGame(){
 
 function newRound(carry=null,title=null,sub=null){setBoard(...boardFor(MATCH.mode,MATCH.players.length));scheduleResize();const mode=MATCH.mode,form=MATCH.form,stage=MATCH.stage,count=MATCH.players.length,idx=mode==="stage"?stageMapIdx(stage):sel.map<0?MATCH.maps[(MATCH.round-1)%MATCH.maps.length]:sel.map,spawns=(spawnMap=idx,pickSpawns(form,count,MATCH.players.map(p=>p.team))),picks=MATCH.players.map(p=>p.char);
  if(mode==="stage"&&sub==null)sub=stageIntroSub(stage);const introMs=title?(mode==="stage"&&sub?2600:2100):mode==="stage"?2300:1300;
- const ents=spawns.map((p,i)=>makeEntity("e"+i,...p,picks[i],!MATCH.players[i].human));ents.forEach((e,i)=>{const pl=MATCH.players[i];e.team=form==="ffa"?i:form==="team"?pl.team:pl.human?0:1;e.ctl=pl.ctl;e.netId=pl.netId;e.seat=pl.seat||0;if(e.isBot){e.diff=pl.diff;e.persona=pl.persona;const kit=BOT_KIT[e.diff];if(kit&&MATCH.mode==="battle"){e.needles=Math.max(e.needles,kit.needles);e.base.needles=e.needles;e.shields=Math.max(e.shields||0,kit.shields);}}});if(carry)Object.assign(ents[0],carry);
+ const ents=spawns.map((p,i)=>makeEntity("e"+i,...p,picks[i],!MATCH.players[i].human));ents.forEach((e,i)=>{const pl=MATCH.players[i];e.team=form==="ffa"?i:form==="team"?pl.team:pl.human?0:1;e.ctl=pl.ctl;e.skin=pl.skin|0;e.netId=pl.netId;e.seat=pl.seat||0;if(e.isBot){e.diff=pl.diff;e.persona=pl.persona;const kit=BOT_KIT[e.diff];if(kit&&MATCH.mode==="battle"){e.needles=Math.max(e.needles,kit.needles);e.base.needles=e.needles;e.shields=Math.max(e.shields||0,kit.shields);}}});if(carry)Object.assign(ents[0],carry);
  G={rid:++roundSeq,cols:CFG.COLS,rows:CFG.ROWS,mode,form,stage,round:MATCH.round,mapIdx:idx,intro:introMs,introMax:introMs,introTitle:title,introSub:sub,grid:buildGrid(idx,spawns,mode==="stage"?stageDensity(stage):null),deco:grid(()=>Math.random()<.24?1:0),theme:MAPS[idx],ents,me:ents[0],mobs:[],mobSeq:0,falls:[],wallFx:[],breakFx:[],parts:[],freeze:0,boss:null,shots:[],isBoss:mode==="stage"&&stageInfo(stage).boss,warns:[],eggs:[],respawnT:0,stallHint:false,spiral:spiralCells(),wallPending:null,zoneOrder:[],zoneIdx:0,zoneQueue:[],zoneDeferred:[],zoneNextAt:CFG.ZONE_START,zoneOn:false,zoneAlert:false,zoneSfx:0,zoneWalls:null,zoneMain:0,sudden:false,suddenIdle:0,suddenAlive:0,finishReason:null,idleT:0,stallT:0,stalled:false,hunt:false,bombs:[],blasts:[],items:[],floats:[],bag:[],skyBag:[],zones:new Array(6).fill(0),skyT:CFG.SKY_FIRST,skyGap:CFG.SKY_EVERY,t:0,roundMs:0,visualT:0,over:false,winner:null,winnerId:null,winnerIds:[],roundScored:false,endDelay:0,shake:0,dangerCache:{},reward:false};
  G.push={};G.bush={};if(mode!=="stage")decorateGrid(spawns);
  /* 드랍률: 블록 수와 인원에 맞춰 한 사람당 아이템이 7개쯤 나오게(0.34~0.55). 맵이 커지거나 인원이 늘어도 템이 모자라지 않게. */
@@ -926,7 +932,7 @@ function advanceGrid(e,dt,decide){if(!e.alive||e.trapped)return;let budget=speed
 
 /* 물풍선 및 아이템 */
 function blastCells(b,g=G.grid){const cells=[{x:b.x,y:b.y,kind:"c"}];for(const [,dx,dy]of DIR4){const arm=[];for(let i=1;i<=b.power;i++){const x=b.x+dx*i,y=b.y+dy*i;if(!inb(x,y)||g[y][x]===1)break;arm.push({x,y,kind:g[y][x]===2?"c":dx?"h":"v",dx,dy});if(g[y][x]===2)break;}if(arm.length)arm[arm.length-1].tip=true;cells.push(...arm);}return cells;}
-function placeBomb(e,at=null){if(!combatActive()||!e?.alive||e.trapped||activeBombs(e)>=bombCapOf(e))return false;const [x,y]=at||cellOf(e);if(!inb(x,y)||bombAt(x,y)||G.grid[y][x]!==0)return false;const pass=new Set(at?[e.id]:[]),lead=at?e.id:null;for(const o of [...G.ents,...G.mobs,...(G.boss?[G.boss]:[])])if(o.alive&&cellOf(o)[0]===x&&cellOf(o)[1]===y)pass.add(o.id);G.bombs.push({x,y,t:0,power:e.power,owner:e.id,pass,lead});invalidateDanger();SFX.bomb();spark(x+.5,y+.5,4,"#bfe6ff",{sp:1.1,life:260,r:.05,g:1.5});updateHud();return true;}
+function placeBomb(e,at=null){if(!combatActive()||!e?.alive||e.trapped||activeBombs(e)>=bombCapOf(e))return false;const [x,y]=at||cellOf(e);if(!inb(x,y)||bombAt(x,y)||G.grid[y][x]!==0)return false;const pass=new Set(at?[e.id]:[]),lead=at?e.id:null;for(const o of [...G.ents,...G.mobs,...(G.boss?[G.boss]:[])])if(o.alive&&cellOf(o)[0]===x&&cellOf(o)[1]===y)pass.add(o.id);G.bombs.push({x,y,t:0,power:e.power,owner:e.id,pass,lead,skin:e.skin|0});invalidateDanger();SFX.bomb();if(!(G.bush?.[key(x,y)]&&!localCached().includes(e)))spark(x+.5,y+.5,4,"#bfe6ff",{sp:1.1,life:260,r:.05,g:1.5});updateHud();return true;}
 function removeItemAt(x,y){const i=G.items.findIndex(t=>t.x===x&&t.y===y);if(i<0)return;G.zones[zoneOf(x,y)]=Math.max(0,G.zones[zoneOf(x,y)]-1);G.items.splice(i,1);}
 /* 동시/연쇄 폭발은 동일한 벽 스냅샷에서 모두 확정한다. 배열 순서에 따른 한 프레임 지연 없음. */
 
@@ -1004,7 +1010,7 @@ function zoneOf(x,y){return Math.min(1,Math.floor(y/(CFG.ROWS/2)))*3+Math.min(2,
 function addItem(x,y,id){if(!inb(x,y)||G.grid[y][x]!==0||G.items.some(it=>it.x===x&&it.y===y))return false;G.items.push({x,y,id,t:0});G.zones[zoneOf(x,y)]++;return true;}
 function dropItem(x,y){const z=zoneOf(x,y),avg=G.zones.reduce((a,b)=>a+b,0)/6,mult=Math.max(.3,Math.min(2.1,1+(avg-G.zones[z])*.5));if(Math.random()<(G.mode==="stage"?CFG.STAGE_DROP:G.dropRate??CFG.DROP)*mult)addItem(x,y,drawFromBag());}
 function itemUseful(e,id){switch(id){case"bomb":return e.maxBombs<capB(e);case"power":case"ultra":return e.power<capP(e);case"roller":case"devil":return e.speedLv<capS(e);case"needle":return e.needles<CFG.HOLD_MAX;case"shield":return e.shields<CFG.HOLD_MAX;case"tele":return e.teleports<CFG.HOLD_MAX;default:return true;}}
-function applyItem(e,id){if(id==="bomb")e.maxBombs=Math.min(capB(e),e.maxBombs+1);if(id==="power")e.power=Math.min(capP(e),e.power+1);if(id==="roller")e.speedLv=Math.min(capS(e),e.speedLv+1);if(id==="ultra")e.power=capP(e);if(id==="devil")e.speedLv=capS(e);if(id==="needle")e.needles=Math.min(3,e.needles+1);if(id==="shield")e.shields=Math.min(3,e.shields+1);if(id==="tele")e.teleports=Math.min(3,e.teleports+1);if(RIDES[id]){const r=RIDES[id];e.ride=id;e.rideHp=r.hp;e.rideSpeed=id==="turtle"?(Math.random()<CFG.TURTLE_FAST_CHANCE?5:1):r.speed;/* A slower mount changes every escape ETA immediately. */e.thinkT=0;}}
+function applyItem(e,id){if(id==="bomb")e.maxBombs=Math.min(capB(e),e.maxBombs+1);if(id==="power")e.power=Math.min(capP(e),e.power+1);if(id==="roller")e.speedLv=Math.min(capS(e),e.speedLv+1);if(id==="ultra")e.power=capP(e);if(id==="devil")e.speedLv=capS(e);if(id==="needle")e.needles=Math.min(3,e.needles+1);if(id==="shield")e.shields=Math.min(3,e.shields+1);if(id==="tele")e.teleports=Math.min(3,e.teleports+1);if(RIDES[id]){const r=RIDES[id];e.ride=id;e.rideHp=r.hp;e.rideSpeed=id==="turtle"?(Math.random()<CFG.TURTLE_FAST_CHANCE?6:1):r.speed;/* A slower mount changes every escape ETA immediately. */e.thinkT=0;}}
 function pickItems(ms){
  for(let i=G.items.length-1;i>=0;i--){const it=G.items[i];it.t+=ms;
   for(const e of G.ents){
@@ -1185,7 +1191,7 @@ function itemUtility(e,it){
  switch(it.id){case"bomb":return 8+(capB(e)-e.maxBombs)*1.4;case"power":return 8+(capP(e)-e.power)*1.5;case"roller":return 10+(capS(e)-e.speedLv)*1.2;case"ultra":return 12+(capP(e)-e.power)*3;case"devil":return 14+(capS(e)-e.speedLv)*2.4;case"needle":return e.needles===0?24:10/(e.needles+1);case"shield":return e.shields===0?28:14/(e.shields+1);case"tele":return e.teleports===0?22:12/(e.teleports+1);default:{
   const r=RIDES[it.id];if(!r)return 0;
   // A blind turtle roll is not worth replacing a healthy mount or a fast build.
-  if(it.id==="turtle")return e.ride||e.speedLv>=4?0:13;
+  if(it.id==="turtle")return e.ride||e.speedLv>=5?0:13;
   if(!e.ride)return it.id==="owl"?Math.max(12,30-e.speedLv*4):29;
   if(e.ride==="turtle")return e.rideSpeed===1?36:it.id==="tank"?18:0;
   if(it.id===e.ride)return e.rideHp<r.hp?20:0;
@@ -2018,7 +2024,7 @@ function renderScoreboard(){
  const timeLabel=sudden?"서든데스 · 시간 제한 해제":limited?`남은 시간 ${seconds}초`:"시간 제한 없음";
  const clock=stage?"":`<span class="round-clock ${zoneStarted()?'sudden':''}" aria-label="${timeLabel}">${sudden?'서든데스':limited?(zoneStarted()?'축소 ':'')+Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0'):'제한 없음'}</span>`;
  const k=stage?`S:${G.stage}:${MATCH.lives}:${mobs}:${G.isBoss}`:ffa?`F:${MATCH.round}:${Object.values(MATCH.scores).join(":")}:${MATCH.need}:${sudden?"SD":seconds}:${G.zoneIdx}`:`R:${MATCH.round}:${MATCH.scoreMe}:${MATCH.scoreFoe}:${MATCH.need}:${sudden?"SD":seconds}:${points}`;
- if(k===scoreboardKey)return;scoreboardKey=k;$("scoreStat").classList.toggle("ffa",ffa);
+ if(k===scoreboardKey)return;scoreboardKey=k;{const ht=$("hudTimer");if(ht)ht.innerHTML=clock?"<small>TIMER</small>"+clock:"";}$("scoreStat").classList.toggle("ffa",ffa);
  if(ffa){
   $("scoreStat").innerHTML=`<span class="score-round">R${MATCH.round}</span><span class="score-goal">개인전 · ${MATCH.need}승 선승</span>${clock}<span class="ffa-scores">${MATCH.players.map(p=>`<span class="ffa-score" style="--player:${PLAYER_COLORS[p.slot]}">P${p.slot+1}<b>${MATCH.scores[p.id]}</b></span>`).join("")}</span>`;
   $("scoreStat").setAttribute("aria-label",`${MATCH.round}라운드, ${MATCH.need}승 선승, ${timeLabel}. `+MATCH.players.map(p=>`플레이어 ${p.slot+1} ${p.name} ${MATCH.scores[p.id]}승`).join(", "));return;
@@ -2086,7 +2092,14 @@ function drawSoftArt(x,y,th,v){const px=x*ts,py=y*ts,cx=px+ts*.5;ellipse(cx,py+t
  if(th.soft==="crate"&&v===1){ellipse(cx,py+ts*.58,ts*.32,ts*.36,th.sSide);ellipse(cx-ts*.03,py+ts*.54,ts*.28,ts*.32,th.sTop);ink(.028);ctx.fillStyle=th.sSide;rrect(cx-ts*.14,py+ts*.08,ts*.28,ts*.13,ts*.05);ctx.fill();ellipse(cx-ts*.13,py+ts*.47,ts*.06,ts*.12,"#ffffff66");return;}
  if(th.soft==="crystal"){if(v){ctx.fillStyle=th.sSide;rrect(cx-ts*.24,py+ts*.22,ts*.48,ts*.66,ts*.24);ctx.fill();ink(.026);ctx.fillStyle=th.sTop;rrect(cx-ts*.24,py+ts*.22,ts*.48,ts*.33,ts*.24);ctx.fill();ctx.strokeStyle="#ffffff80";ctx.lineWidth=ts*.04;ctx.beginPath();ctx.moveTo(cx-ts*.22,py+ts*.54);ctx.lineTo(cx+ts*.22,py+ts*.54);ctx.stroke();}else{ctx.fillStyle=th.sSide;ctx.beginPath();for(const [a,b]of [[0,.17],[.26,.53],[.14,.87],[-.14,.87],[-.26,.53]])ctx.lineTo(cx+ts*a,py+ts*b);ctx.closePath();ctx.fill();ink(.026);ctx.fillStyle=th.sTop;ctx.beginPath();ctx.moveTo(cx,py+ts*.17);ctx.lineTo(cx+ts*.02,py+ts*.87);ctx.lineTo(cx-ts*.14,py+ts*.87);ctx.lineTo(cx-ts*.26,py+ts*.53);ctx.fill();}ellipse(cx-ts*.10,py+ts*.36,ts*.045,ts*.09,"#ffffff99");return;}
  const m=ts*.05,bx=px+m,by=py-ts*.14,bw=ts*.9;ctx.fillStyle=th.sSide;rrect(bx,by,bw,ts*1.1,ts*.13);ctx.fill();ink();ctx.fillStyle=th.sTop;rrect(bx,by,bw,ts*.85,ts*.12);ctx.fill();ctx.strokeStyle="#3c280f40";ctx.lineWidth=Math.max(1,ts*.045);ctx.beginPath();ctx.moveTo(bx+bw*.08,by+ts*.42);ctx.lineTo(bx+bw*.92,by+ts*.42);ctx.moveTo(cx,by+ts*.1);ctx.lineTo(cx,by+ts*.76);ctx.stroke();ctx.fillStyle="#ffffff66";rrect(bx+bw*.12,by+ts*.1,bw*.28,ts*.11,ts*.05);ctx.fill();}
-function drawBomb(b){if(G.bush?.[key(b.x,b.y)]&&!localCached().some(e=>e.id===b.owner))return;const cx=(b.x+.5)*ts,cy=(b.y+.5)*ts,p=b.t/CFG.FUSE,w=Math.sin(b.t/1000*Math.PI*(3+p*10)),rx=ts*.38*(1+w*.09),ry=ts*.38*(1-w*.09);ellipse(cx,cy+ts*.33,rx*.8,ry*.26,"#0c162a33");ctx.fillStyle="#3f9ad8";rrect(cx-ts*.055,cy-ry-ts*.09,ts*.11,ts*.12,ts*.04);ctx.fill();const g=ctx.createRadialGradient(cx-rx*.35,cy-ry*.45,rx*.1,cx,cy,rx*1.1);g.addColorStop(0,"#f2fbff");g.addColorStop(.4,"#8fd2f7");g.addColorStop(.8,"#3f9ad8");g.addColorStop(1,"#2477b5");ellipse(cx,cy,rx,ry,g);ink(.032);ellipse(cx-rx*.34,cy-ry*.4,rx*.2,ry*.13,"#ffffffdd");if(G.form==="team"||G.form==="ffa"){const e=G.ents.find(o=>o.id===b.owner);if(e){ctx.strokeStyle=teamColor(e);ctx.lineWidth=Math.max(2,ts*.08);ctx.beginPath();ctx.arc(cx,cy,rx*.85,.2*Math.PI,.8*Math.PI);ctx.stroke();}}if(p>.7&&Math.floor(b.t/100)%2===0)ellipse(cx,cy,rx,ry,"#ffffff70");}
+
+/* 물풍선 스킨: 0 기본 · 1 딸기 · 2 별 · 3 검정 */
+const SKINS=[{name:"기본",c:["#f2fbff","#8fd2f7","#3f9ad8","#2477b5"],knot:"#3f9ad8"},{name:"딸기",c:["#fff0f3","#ff9aac","#ec4766","#b51f3d"],knot:"#3fae4a"},{name:"별",c:["#fffbe6","#ffe27a","#f5b81c","#c98a00"],knot:"#e0a000"},{name:"검정",c:["#9aa3b5","#4a5266","#232838","#0d1018"],knot:"#555e74"}];
+let mySkin=0;try{mySkin=Math.max(0,Math.min(3,+(localStorage.getItem("bbSkin")||0)))}catch(e){}
+function skinDeco(k,cx,cy,rx,ry){if(k===1){ctx.fillStyle="#fff7d1";for(const [a,b]of [[-.35,.05],[.25,-.2],[.05,.35],[.4,.25],[-.1,-.35]]){ctx.beginPath();ctx.ellipse(cx+rx*a,cy+ry*b,rx*.06,ry*.09,0,0,Math.PI*2);ctx.fill();}}
+ else if(k===2){ctx.fillStyle="#fffdf0";ctx.beginPath();for(let i=0;i<10;i++){const r=(i%2?.18:.42)*rx,t=-Math.PI/2+i*Math.PI/5;ctx.lineTo(cx+Math.cos(t)*r,cy+ry*.05+Math.sin(t)*r);}ctx.closePath();ctx.fill();}
+ else if(k===3){for(const s of [-1,1]){ellipse(cx+s*rx*.28,cy+ry*.02,rx*.17,ry*.21,"#fff");ellipse(cx+s*rx*.24,cy+ry*.06,rx*.08,ry*.1,"#10131c");}}}
+function drawBomb(b){if(G.bush?.[key(b.x,b.y)]&&!localCached().some(e=>e.id===b.owner))return;const cx=(b.x+.5)*ts,cy=(b.y+.5)*ts,p=b.t/CFG.FUSE,w=Math.sin(b.t/1000*Math.PI*(3+p*10)),rx=ts*.38*(1+w*.09),ry=ts*.38*(1-w*.09);ellipse(cx,cy+ts*.33,rx*.8,ry*.26,"#0c162a33");const SKN=SKINS[b.skin|0]||SKINS[0];ctx.fillStyle=SKN.knot;rrect(cx-ts*.055,cy-ry-ts*.09,ts*.11,ts*.12,ts*.04);ctx.fill();const g=ctx.createRadialGradient(cx-rx*.35,cy-ry*.45,rx*.1,cx,cy,rx*1.1);g.addColorStop(0,SKN.c[0]);g.addColorStop(.4,SKN.c[1]);g.addColorStop(.8,SKN.c[2]);g.addColorStop(1,SKN.c[3]);ellipse(cx,cy,rx,ry,g);ink(.032);skinDeco(b.skin|0,cx,cy,rx,ry);ellipse(cx-rx*.34,cy-ry*.4,rx*.2,ry*.13,"#ffffffdd");if(G.form==="team"||G.form==="ffa"){const e=G.ents.find(o=>o.id===b.owner);if(e){ctx.strokeStyle=teamColor(e);ctx.lineWidth=Math.max(2,ts*.08);ctx.beginPath();ctx.arc(cx,cy,rx*.85,.2*Math.PI,.8*Math.PI);ctx.stroke();}}if(p>.7&&Math.floor(b.t/100)%2===0)ellipse(cx,cy,rx,ry,"#ffffff70");}
 function drawBlastCell(bl,c){const k=bl.t/CFG.BLAST,grow=Math.min(1,(k+.06)/.2),fade=k>.6?Math.max(0,1-(k-.6)/.4):1,cx=(c.x+.5)*ts,cy=(c.y+.5)*ts,th=ts*.86*grow,wave=reducedMotion?0:Math.sin(G.visualT/40+c.x+c.y)*ts*.03;
  const pal=bl.fire?["#e2561d","#ff9a4a","#fff3cf"]:bl.boss?["#6f45c7","#b48cff","#f6edff"]:["#1590ec","#5fd0ff","#ffffff"];
  ctx.save();ctx.globalAlpha=fade;ctx.lineCap="butt";
@@ -2292,6 +2305,7 @@ function markPhone(){document.documentElement.classList.toggle("phone",isPhone()
 markPhone();window.addEventListener("resize",markPhone);
 function sizeCtrl(){const viewport=window.visualViewport,w=window.innerWidth||360,h=viewport&&Math.abs(viewport.scale-1)<.01&&viewport.height>0?viewport.height:window.innerHeight||700,land=touchMode&&w>h&&h<560;document.documentElement.style.setProperty("--app-height",Math.round(h)+"px");document.documentElement.style.setProperty("--ui",(touchMode?1:Math.max(1,Math.min(1.7,Math.min(w/1280,h/720)))).toFixed(3));$("app").classList.toggle("land",land);$("app").classList.toggle("touch",touchMode);let u=land?Math.max(.78,Math.min(1.08,h*.52/190)):Math.max(.78,Math.min(Math.max(140,Math.min(195,h*.27))/186,w/360));document.documentElement.style.setProperty("--u",u.toFixed(3));}
 function resize(){const wrap=$("stage"),cs=getComputedStyle(wrap),pw0=parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight),ph0=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);let w=wrap.clientWidth-pw0,h=wrap.clientHeight-ph0;
+ if(!touchMode){const hz=Math.max(1,Math.min(1.75,(window.innerHeight-90)/600,(window.innerWidth*.3)/250));document.documentElement.style.setProperty("--hz",hz.toFixed(3));}
  if(!touchMode){const ar=$("arena"),as=getComputedStyle(ar),hud=$("hud"),hw=hud.hidden?0:hud.getBoundingClientRect().width+parseFloat(as.columnGap||0);w=ar.clientWidth-parseFloat(as.paddingLeft)-parseFloat(as.paddingRight)-hw-pw0;h=ar.clientHeight-parseFloat(as.paddingTop)-parseFloat(as.paddingBottom)-ph0;}if(w<=0||h<=0)return;ts=Math.max(1,Math.floor(Math.min((w-6)/CFG.COLS,(h-4)/CFG.ROWS)));const cw=ts*CFG.COLS,ch=ts*CFG.ROWS,dpr=Math.min(2,window.devicePixelRatio||1),pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);if(!touchMode){wrap.style.width=(cw+pw0+6)+"px";}else wrap.style.width="";if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;cv.style.width=cw+"px";cv.style.height=ch+"px";ctx.setTransform(dpr,0,0,dpr,0,0);}if(G)draw();}
 let resizeQueued=false;function scheduleResize(){if(resizeQueued)return;resizeQueued=true;requestAnimationFrame(()=>{resizeQueued=false;clearInputs();sizeCtrl();resize();});}
 window.addEventListener("resize",scheduleResize);window.addEventListener("orientationchange",scheduleResize);window.visualViewport?.addEventListener("resize",scheduleResize);if(window.ResizeObserver)new ResizeObserver(()=>{if(G)resize();}).observe($("stage"));
@@ -2922,8 +2936,9 @@ function renderLobbyArt(){
  $("entryHero").innerHTML=CHARS.map((c,i)=>`<span>${avatarSVG(i)}</span>`).join("");
  $("artOne").innerHTML=avatarSVG(0,"down",true);$("artTwo").innerHTML=avatarSVG(0,"down",true)+avatarSVG(1,"down",true);
 }
-function renderPrefs(){for(const [id,k] of [["prefCtrl","ctrl"],["prefSnd","snd"]])$(id).querySelectorAll("button").forEach(b=>{const on=b.dataset.v===sel[k];b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on));});}
+function renderPrefs(){$("prefSkin")?.querySelectorAll("button").forEach(b=>{const on=+b.dataset.v===mySkin;b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on));});for(const [id,k] of [["prefCtrl","ctrl"],["prefSnd","snd"]])$(id).querySelectorAll("button").forEach(b=>{const on=b.dataset.v===sel[k];b.classList.toggle("on",on);b.setAttribute("aria-pressed",String(on));});}
 for(const [id,k] of [["prefCtrl","ctrl"],["prefSnd","snd"]])$(id).addEventListener("click",ev=>{const b=ev.target.closest("button[data-v]");if(!b)return;sel[k]=b.dataset.v;saveSettings();syncMenu();renderPrefs();SFX.unlock();SFX.ui();});
+$("prefSkin").addEventListener("click",ev=>{const b=ev.target.closest("button[data-v]");if(!b)return;mySkin=+b.dataset.v;try{localStorage.setItem("bbSkin",String(mySkin))}catch(e){}renderPrefs();SFX.unlock();SFX.ui();});
 $("entryGrid").addEventListener("click",ev=>{
  const b=ev.target.closest("button[data-entry]");if(!b)return;const k=b.dataset.entry;
  if(k==="one"||k==="local"){openLocalRoom(k);return;}
