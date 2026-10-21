@@ -431,6 +431,17 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
 #tipCard b{color:#ffe45c}#tipCard div{display:flex;align-items:center;gap:10px;margin:6px 0}#tipCard i{font-style:normal;font-size:22px;width:30px;text-align:center}
 @media (orientation:landscape){#tipCard{font-size:12px;padding:8px 14px;width:min(56vw,340px)}#tipCard i{font-size:16px}#tipCard div{margin:2px 0}}
 #tipCard small{display:block;text-align:center;opacity:.75;margin-top:6px;font-weight:600}
+
+/* PC: 판과 패널을 붙여 가운데 정렬, 패널은 좁게, 위·아래 띠는 얇게 */
+#app:not(.touch) #arena{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:center;min-height:0;flex:1 1 auto;align-items:stretch;column-gap:10px;padding:6px 10px!important}
+#app:not(.touch) #stage{flex:none!important;padding:4px!important}
+#app:not(.touch) #hud{width:212px;flex:none;order:2!important;align-self:stretch;overflow-y:auto;padding:10px!important;zoom:1!important;max-height:100%}
+#app:not(.touch) #playTop{min-height:0!important;padding-top:5px!important;padding-bottom:5px!important;zoom:1!important}
+#app:not(.touch) #playTop .smallbtn{min-height:30px!important;padding:5px 9px!important}
+#app:not(.touch) .keyhint{zoom:1!important;padding:3px 10px!important;font-size:10px!important}
+#app:not(.touch) #hud .stat,#app:not(.touch) #hud .islot{min-height:50px!important}
+#app:not(.touch) #hud .member{padding:6px 8px!important}
+#app:not(.touch) #hud #stateLine{font-size:10px!important;padding-top:8px!important;margin-top:8px!important}
 </style>
 </head>
 <body>
@@ -999,7 +1010,6 @@ function pickItems(ms){
   for(const e of G.ents){
    if(!e.alive||e.trapped||!itemUseful(e,it.id))continue;
    const c=cellOf(e);if(c[0]!==it.x||c[1]!==it.y)continue;
-   if(e.isBot&&RIDES[it.id]&&(itemUtility(e,it)<=0||it.id==="turtle"&&!safeInterval(dangerMap(),...c,0,CFG.FUSE+CFG.BLAST)))continue;
    // Enforce yielding on contact too, including escape paths that cross the item.
    if(yieldItemTo(e,it)){e.yieldUntil=G.t+700;continue;}
    applyItem(e,it.id);e.pickups++;removeItemAt(it.x,it.y);
@@ -1022,9 +1032,29 @@ function popMob(m){if(!m.alive)return;m.alive=false;m.trapped=false;G.idleT=0;MA
 
 /* 위험도: 단일 최솟값 대신 각 물줄기의 시작~종료 구간을 보존한다. */
 function bombCovers(b,x,y){return blastCells(b).some(c=>c.x===x&&c.y===y);}
+
+let AI_VIEW=null;
+/* 의심 확률: 상대가 풀숲에 들어가는 걸 봤을 때 '물풍선 놨겠다'고 믿는 정도 */
+const SUSPECT={rookie:.1,easy:.3,normal:.55,hard:.85,master:1};
+/* 봇이 아는 물풍선 목록. 풀숲 속 상대 물풍선은 빼고, 의심 가는 풀숲엔 가상의 물풍선을 넣는다. 차이가 없으면 null(공용 지도 사용). */
+function botFog(v){
+ if(!v||!G?.bush||G.mode==="stage")return null;
+ const mates=o=>o&&(o.id===v.id||G.form!=="ffa"&&o.team===v.team);
+ const hidden=G.bombs.filter(b=>G.bush[key(b.x,b.y)]&&!mates(G.ents.find(o=>o.id===b.owner)));
+ const sus=[];for(const q of G.sus||[]){if(mates(G.ents.find(o=>o.id===q.id)))continue;
+  q.belief=q.belief||{};if(q.belief[v.id]===undefined)q.belief[v.id]=Math.random()<(SUSPECT[v.diff]??.55);
+  if(q.belief[v.id]&&!G.bombs.some(b=>b.x===q.x&&b.y===q.y&&!hidden.includes(b)))sus.push({x:q.x,y:q.y,t:G.t-q.t,power:q.power,owner:q.id,pass:new Set(),virtual:true});}
+ if(!hidden.length&&!sus.length)return null;
+ return G.bombs.filter(b=>!hidden.includes(b)).concat(sus);
+}
+/* 누가 풀숲에 들어가는 순간을 기록(모두가 화면에서 볼 수 있는 정보) */
+function trackBushEntry(){if(!G.bush)return;G.sus=(G.sus||[]).filter(q=>G.t-q.t<CFG.FUSE+CFG.BLAST);
+ for(const e of G.ents){if(!e.alive||e.trapped){e._inBush=false;continue;}const [x,y]=[Math.round(e.px),Math.round(e.py)],inB=!!G.bush[key(x,y)];
+  if(inB&&!e._inBush)G.sus.push({id:e.id,x,y,t:G.t,power:e.power});e._inBush=inB;}}
 function dangerMap(extra=null,chain=true){
- const cacheKey=(chain?"chain":"plain")+(extra?"@"+extra.x+","+extra.y+","+extra.power:"");if(G.dangerCache[cacheKey])return G.dangerCache[cacheKey];
- const bombs=extra?[...G.bombs,extra]:G.bombs,h=grid(()=>[]),forecast=G.grid.map(r=>r.slice()),remaining=new Set(bombs),left=new Map(bombs.map(b=>[b,Math.max(0,CFG.FUSE-b.t)]));
+ const fog=botFog(AI_VIEW);
+ const cacheKey=(chain?"chain":"plain")+(extra?"@"+extra.x+","+extra.y+","+extra.power:"")+(fog?"#"+AI_VIEW.id:"");if(G.dangerCache[cacheKey])return G.dangerCache[cacheKey];
+ const base=fog?fog:G.bombs,bombs=extra?[...base,extra]:base,h=grid(()=>[]),forecast=G.grid.map(r=>r.slice()),remaining=new Set(bombs),left=new Map(bombs.map(b=>[b,Math.max(0,CFG.FUSE-b.t)]));
  // Replay future batches in time order. Each chain shares one wall snapshot;
  // only later batches see the openings left by earlier blasts.
  while(remaining.size){
@@ -1628,9 +1658,10 @@ function aiThink(e){
  if(followPlan(e,hp,c,ctx))return;
  choosePlan(e,hp,c,ctx);
 }
-function stepBots(ms,dt){
+function stepBots(ms,dt){try{stepBotsInner(ms,dt);}finally{AI_VIEW=null;}}
+function stepBotsInner(ms,dt){
  for(const e of G.ents){
-  if(!e.isBot||!e.alive)continue;e.thinkT-=ms;
+  if(!e.isBot||!e.alive)continue;AI_VIEW=e;e.thinkT-=ms;
   if(e.trapped){if(e.thinkT<=0)aiThink(e);continue;}
   if(e.segment){
    const h=perceivedDanger(e,aiCfg(e)),s=e.segment,time=(Math.abs(e.px-s.x)+Math.abs(e.py-s.y))*1000/speedOf(e)+90;
@@ -1871,7 +1902,7 @@ function step(dt){if(!G||phase!=="play")return;const ms=dt*1000;stepEffects(ms,d
  G.t+=ms;invalidateDanger();if(G.mode==="stage")MATCH.elapsed+=ms;
  for(const e of G.ents)e.invuln=Math.max(0,e.invuln-ms);
  for(const b of G.bombs)b.t+=ms;
- for(const e of G.ents)if(!e.isBot)moveHuman(e,dt);stepBots(ms,dt);stepMobs(ms,dt);stepBoss(ms,dt);stepShots(ms,dt);
+ for(const e of G.ents)if(!e.isBot)moveHuman(e,dt);trackBushEntry();stepBots(ms,dt);stepMobs(ms,dt);stepBoss(ms,dt);stepShots(ms,dt);
  for(const b of G.bombs)for(const id of b.pass){const e=[...G.ents,...G.mobs,...(G.boss?[G.boss]:[])].find(o=>o.id===id),on=!!e&&cellOf(e)[0]===b.x&&cellOf(e)[1]===b.y;if(b.lead===id){if(on)b.lead=null;else if(e&&e.alive&&Math.abs(e.px-b.x)+Math.abs(e.py-b.y)<1.6)continue;}if(!e||!e.alive||!on)b.pass.delete(id);}
  stepBombs(0);stepBlasts(ms);stepTraps(ms);stepStall(ms);checkEnd();if(G.over)return;pickItems(ms);stepSky(ms);
 }
@@ -2257,7 +2288,8 @@ function isPhone(){return isTouch()&&Math.min(screen.width,screen.height)<760;}
 function markPhone(){document.documentElement.classList.toggle("phone",isPhone());const s=document.querySelector(".e-one small");if(s&&isPhone())s.innerHTML="나 + 봇 최대 7명<br>화면 방향키 · 물풍선 버튼";}
 markPhone();window.addEventListener("resize",markPhone);
 function sizeCtrl(){const viewport=window.visualViewport,w=window.innerWidth||360,h=viewport&&Math.abs(viewport.scale-1)<.01&&viewport.height>0?viewport.height:window.innerHeight||700,land=touchMode&&w>h&&h<560;document.documentElement.style.setProperty("--app-height",Math.round(h)+"px");document.documentElement.style.setProperty("--ui",(touchMode?1:Math.max(1,Math.min(1.7,Math.min(w/1280,h/720)))).toFixed(3));$("app").classList.toggle("land",land);$("app").classList.toggle("touch",touchMode);let u=land?Math.max(.78,Math.min(1.08,h*.52/190)):Math.max(.78,Math.min(Math.max(140,Math.min(195,h*.27))/186,w/360));document.documentElement.style.setProperty("--u",u.toFixed(3));}
-function resize(){const wrap=$("stage"),cs=getComputedStyle(wrap),w=wrap.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight),h=wrap.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);if(w<=0||h<=0)return;ts=Math.max(1,Math.floor(Math.min((w-6)/CFG.COLS,(h-4)/CFG.ROWS)));const cw=ts*CFG.COLS,ch=ts*CFG.ROWS,dpr=Math.min(2,window.devicePixelRatio||1),pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;cv.style.width=cw+"px";cv.style.height=ch+"px";ctx.setTransform(dpr,0,0,dpr,0,0);}if(G)draw();}
+function resize(){const wrap=$("stage"),cs=getComputedStyle(wrap),pw0=parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight),ph0=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);let w=wrap.clientWidth-pw0,h=wrap.clientHeight-ph0;
+ if(!touchMode){const ar=$("arena"),as=getComputedStyle(ar),hud=$("hud"),hw=hud.hidden?0:hud.getBoundingClientRect().width+parseFloat(as.columnGap||0);w=ar.clientWidth-parseFloat(as.paddingLeft)-parseFloat(as.paddingRight)-hw-pw0;h=ar.clientHeight-parseFloat(as.paddingTop)-parseFloat(as.paddingBottom)-ph0;}if(w<=0||h<=0)return;ts=Math.max(1,Math.floor(Math.min((w-6)/CFG.COLS,(h-4)/CFG.ROWS)));const cw=ts*CFG.COLS,ch=ts*CFG.ROWS,dpr=Math.min(2,window.devicePixelRatio||1),pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);if(!touchMode){wrap.style.width=(cw+pw0+6)+"px";}else wrap.style.width="";if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;cv.style.width=cw+"px";cv.style.height=ch+"px";ctx.setTransform(dpr,0,0,dpr,0,0);}if(G)draw();}
 let resizeQueued=false;function scheduleResize(){if(resizeQueued)return;resizeQueued=true;requestAnimationFrame(()=>{resizeQueued=false;clearInputs();sizeCtrl();resize();});}
 window.addEventListener("resize",scheduleResize);window.addEventListener("orientationchange",scheduleResize);window.visualViewport?.addEventListener("resize",scheduleResize);if(window.ResizeObserver)new ResizeObserver(()=>{if(G)resize();}).observe($("stage"));
 function setText(id,value){const e=$(id),t=String(value);if(e.textContent!==t){const had=e.textContent!=="";e.textContent=t;if(had&&e.classList.contains("value"))pulseValue(e);}}
