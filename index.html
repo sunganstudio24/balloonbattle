@@ -741,28 +741,77 @@ const SFX=(()=>{let ac=null,master=null,sfxBus=null,on=true,bgmOn=true,want=null
  function tone(f,f1,dur=.13,type="sine",delay=0){if(!on)return;const c=boot();if(!c||c.state!=="running")return;const t=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.22,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g);g.connect(sfxBus);o.onended=()=>{o.disconnect();g.disconnect();};o.start(t);o.stop(t+dur+.02);}
  function noise(dur=.25){if(!on)return;const c=boot();if(!c||c.state!=="running")return;const b=c.createBuffer(1,Math.floor(c.sampleRate*dur),c.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*Math.pow(1-i/a.length,2)*.32;const s=c.createBufferSource(),f=c.createBiquadFilter();f.type="lowpass";f.frequency.value=950;s.buffer=b;s.connect(f);f.connect(sfxBus);s.onended=()=>{s.disconnect();f.disconnect();};s.start();}
 
- /* 테마별 BGM: 16스텝 반복 칩튠(멜로디·베이스·하이햇). 파일 없이 WebAudio로 만든다. */
+ /* ── BGM 엔진: 밝은 캐주얼 게임풍(통통 튀는 베이스 + 업비트 코드 + 멜로디 + 드럼). 원곡을 베끼지 않고 테마마다 규칙으로 작곡한다. ── */
+ const MODES={maj:[0,2,4,5,7,9,11],min:[0,2,3,5,7,8,10],harm:[0,2,3,5,7,8,11],dor:[0,2,3,5,7,9,10],mix:[0,2,4,5,7,9,10]};
  const THEMES={
-  ice:{bpm:126,root:523.25,sc:[0,2,4,7,9,12,14],wave:"sine",bw:"triangle",mel:[0,2,4,5,4,2,1,2, 0,2,4,6,5,4,2,0],bass:[0,0,4,4,5,5,3,4]},
-  brick:{bpm:112,root:440,sc:[0,1,4,5,7,8,11,12],wave:"triangle",bw:"square",mel:[0,1,2,1,3,2,1,0, 4,3,2,3,1,2,1,0],bass:[0,0,3,3,4,4,0,0]},
-  rock:{bpm:104,root:392,sc:[0,2,4,7,9,12,14],wave:"triangle",bw:"triangle",mel:[2,4,5,4,2,1,0,1, 2,4,5,6,5,4,2,2],bass:[0,0,3,3,4,4,3,3]},
-  metal:{bpm:132,root:349.23,sc:[0,2,3,5,7,8,10,12],wave:"square",bw:"sawtooth",mel:[0,4,7,4,2,5,7,5, 0,4,7,4,3,6,7,6],bass:[0,0,5,5,3,3,4,4]},
-  sea:{bpm:118,root:466.16,sc:[0,2,4,5,7,9,11,12],wave:"square",bw:"triangle",mel:[4,4,5,4,2,0,2,4, 5,5,7,5,4,2,1,0],bass:[0,0,3,3,4,4,0,4]},
-  village:{bpm:116,root:587.33,sc:[0,2,4,5,7,9,11,12],wave:"triangle",bw:"square",mel:[0,0,2,4,4,2,4,5, 7,5,4,2,1,2,0,0],bass:[0,0,4,4,3,3,4,4]},
-  factory:{bpm:124,root:329.63,sc:[0,2,3,5,7,8,10,12],wave:"square",bw:"square",mel:[0,0,3,0,4,0,3,2, 0,0,3,0,5,4,3,2],bass:[0,0,0,0,5,5,3,3]},
-  mine:{bpm:96,root:293.66,sc:[0,2,3,5,7,9,10,12],wave:"triangle",bw:"sawtooth",mel:[0,2,3,4,3,2,0,1, 2,3,4,6,5,4,3,2],bass:[0,0,3,3,1,1,4,4]},
-  lobby:{bpm:120,root:523.25,sc:[0,2,4,5,7,9,11,12],wave:"square",bw:"triangle",mel:[0,2,4,7,5,4,2,4, 5,7,9,7,5,4,2,0],bass:[0,0,3,3,4,4,0,0]}
+  lobby:  {bpm:134,root:261.63,mode:"maj",prog:[0,5,3,4],progB:[3,4,2,5],lead:"pulse",stab:"ska",drum:"pop",seed:11},
+  ice:    {bpm:122,root:329.63,mode:"maj",prog:[0,3,5,4],progB:[3,4,0,4],lead:"bell",stab:"soft",drum:"light",seed:23},
+  brick:  {bpm:118,root:293.66,mode:"harm",prog:[0,6,5,4],progB:[3,4,0,4],lead:"flute",stab:"ska",drum:"tom",seed:37},
+  rock:   {bpm:126,root:392.00,mode:"maj",prog:[0,4,3,0],progB:[5,3,0,4],lead:"flute",stab:"pluck",drum:"pop",seed:41},
+  metal:  {bpm:138,root:220.00,mode:"min",prog:[0,5,2,6],progB:[3,6,0,4],lead:"saw",stab:"arp",drum:"dance",seed:53},
+  sea:    {bpm:124,root:349.23,mode:"mix",prog:[0,3,4,0],progB:[3,0,4,4],lead:"pulse",stab:"ska",drum:"pop",seed:67,swing:.6},
+  village:{bpm:130,root:233.08,mode:"maj",prog:[0,3,0,4],progB:[3,4,5,4],lead:"pulse",stab:"march",drum:"march",seed:71},
+  factory:{bpm:142,root:164.81,mode:"min",prog:[0,0,5,6],progB:[5,6,0,6],lead:"square",stab:"arp",drum:"dance",seed:83},
+  mine:   {bpm:112,root:293.66,mode:"dor",prog:[0,3,0,6],progB:[3,6,3,4],lead:"flute",stab:"pluck",drum:"light",seed:97}
  };
+ const RHY=[[1,0,1,1,1,0,1,0],[1,1,1,0,1,0,1,1],[1,0,0,1,1,0,1,0],[1,2,1,2,1,1,1,0],[1,1,2,1,1,0,0,0],[1,0,1,0,1,1,1,1],[1,2,2,1,1,2,1,0]];
+ function rng(seed){let a=seed>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+ /* 16마디 곡 만들기: A A' B A'' (각 4마디). 강박은 코드음, 약박은 순차 진행, 끝은 으뜸음. */
+ function compose(th){const R=rng(th.seed),chordOf=(bar,b)=>(b?th.progB:th.prog)[bar%4],tones=c=>[c,c+2,c+4];
+  const near=(p,set,base)=>{let best=p,bd=99;for(const t of set)for(const o of [-7,0,7,14]){const v=t+o+base;if(v<4||v>15)continue;const d=Math.abs(v-p);if(d<bd){bd=d;best=v;}}return best;};
+  function phrase(b,lift){const bars=[],rs=[RHY[R()*RHY.length|0],RHY[R()*RHY.length|0],RHY[R()*RHY.length|0]],arc=[[7,9,11,8],[9,8,11,9],[11,9,8,7],[7,11,9,8]][R()*4|0];let p=arc[0]+lift;
+   for(let i=0;i<4;i++){const r=i===2?rs[0]:rs[i===1?1:i===3?2:0],c=chordOf(i,b),ev=[],tgt=arc[i]+lift;
+    for(let s=0;s<8;s++){if(r[s]!==1){ev.push(r[s]===2?"h":null);continue;}
+     if(s===0)p=near(tgt,tones(c),0);else if(s===4)p=near(p+(R()<.5?3:-2),tones(c),0);
+     else{const dir=Math.sign(tgt-p)||(R()<.5?1:-1);p+=R()<.7?dir:-dir;if(R()<.2)p+=dir*2;p=Math.max(4+lift,Math.min(15+lift,p));}
+     ev.push(p);}
+    bars.push(ev);}
+   return bars;}
+  const cad=(bars,b)=>{const c=chordOf(3,b),last=bars[3].slice();last[4]=near(typeof last[4]==="number"?last[4]:typeof last[2]==="number"?last[2]:8,[c],0);last[5]="h";last[6]="h";last[7]=null;const x=bars.slice();x[3]=last;return x;};
+  const A=phrase(false,0),A2=cad(A.map(r=>r.slice()),false),B=phrase(true,2);
+  const endA=A2.slice();const t=endA[3].slice();t[4]=7;t[5]="h";t[6]="h";t[7]=null;endA[3]=t;
+  return {mel:[...A,...A2,...cad(B,true),...endA],sect:[0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0]};}
+ let PULSE=null;function pulseWave(c){if(PULSE)return PULSE;const n=32,re=new Float32Array(n),im=new Float32Array(n);for(let k=1;k<n;k++){im[k]=2/(k*Math.PI)*Math.sin(k*Math.PI*.25);}return PULSE=c.createPeriodicWave(re,im);}
  let bg=null;
- function bgmNote(f,t,dur,type,vol){const c=ac,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(bg.out);o.start(t);o.stop(t+dur+.02);o.onended=()=>{o.disconnect();g.disconnect();};}
- function bgmHat(t){const c=ac,b=c.createBuffer(1,Math.floor(c.sampleRate*.03),c.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=(Math.random()*2-1)*(1-i/a.length);const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();f.type="highpass";f.frequency.value=6000;g.gain.value=.05;s.buffer=b;s.connect(f);f.connect(g);g.connect(bg.out);s.start(t);s.onended=()=>{s.disconnect();f.disconnect();g.disconnect();};}
- function bgmTick(){if(!bg||!ac||ac.state!=="running")return;const th=bg.th,step=60/th.bpm/2;if(bg.next<ac.currentTime-.05)bg.next=ac.currentTime+.05;
-  while(bg.next<ac.currentTime+.25){const i=bg.i%16,t=bg.next,f=n=>th.root*Math.pow(2,(th.sc[n%th.sc.length]+12*Math.floor(n/th.sc.length))/12);
-   const fast=bg.fast?1.0:0;if(i%2===0||th.mel[i]!==th.mel[(i+15)%16])bgmNote(f(th.mel[(i+(bg.bar%2)*0)%16]),t,step*.9,th.wave,.05);
-   if(i%2===0)bgmNote(f(th.bass[(i/2)%8])/4,t,step*1.8,th.bw,.06);bgmHat(t);if(fast&&i%4===2)bgmHat(t+step/2);
-   bg.i++;if(bg.i%16===0)bg.bar++;bg.next+=step*(bg.fast?.82:1);}}
- function bgm(kind){want=kind;if(!bgmOn)return;const c=boot();if(!c)return;const th=THEMES[kind]||THEMES.rock;if(bg&&bg.kind===kind)return;bgmStop();const out=c.createGain();out.gain.value=.5;out.connect(master);bg={kind,th,out,i:0,bar:0,next:c.currentTime+.1,timer:setInterval(bgmTick,60),fast:false};}
- function bgmStop(){if(!bg)return;clearInterval(bg.timer);try{bg.out.gain.setTargetAtTime(0,ac.currentTime,.05);const o=bg.out;setTimeout(()=>o.disconnect(),400);}catch{}bg=null;}
+ function v(t,node,a,peak,hold,rel){node.gain.setValueAtTime(.0001,t);node.gain.exponentialRampToValueAtTime(peak,t+a);node.gain.setValueAtTime(peak,t+a+hold);node.gain.exponentialRampToValueAtTime(.0001,t+a+hold+rel);return t+a+hold+rel;}
+ function osc(t,f,type,dest,vol,dur,opt={}){const c=ac,o=c.createOscillator(),g=c.createGain();if(type==="pulse")o.setPeriodicWave(pulseWave(c));else o.type=type;o.frequency.setValueAtTime(f,t);if(opt.drop)o.frequency.exponentialRampToValueAtTime(opt.drop,t+dur);
+  if(opt.vib&&dur>.18){const l=c.createOscillator(),lg=c.createGain();l.frequency.value=5.5;lg.gain.value=opt.vib;l.connect(lg);lg.connect(o.detune);l.start(t+.08);l.stop(t+dur+.1);}
+  const end=v(t,g,opt.a??.008,vol,Math.max(0,dur*(opt.hold??.55)),opt.r??dur*.6);o.connect(g);g.connect(dest);o.start(t);o.stop(end+.02);o.onended=()=>{o.disconnect();g.disconnect();};}
+ function nz(t,dur,vol,type,freq,q=1){const c=ac,b=c.createBuffer(1,Math.max(1,Math.floor(c.sampleRate*dur)),c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();f.type=type;f.frequency.value=freq;f.Q.value=q;s.buffer=b;v(t,g,.002,vol,0,dur);s.connect(f);f.connect(g);g.connect(bg.out);s.start(t);s.onended=()=>{s.disconnect();f.disconnect();g.disconnect();};}
+ const freqOf=(th,d)=>{const m=MODES[th.mode];return th.root*Math.pow(2,(m[((d%7)+7)%7]+12*Math.floor(d/7))/12);};
+ function lead(th,t,f,dur){const L=th.lead,o=bg.lead;
+  if(L==="bell"){osc(t,f,"sine",o,.09,dur,{a:.003,hold:.05,r:dur*1.4});osc(t,f*2.005,"sine",o,.035,dur,{a:.003,hold:.02,r:dur*.8});}
+  else if(L==="flute"){osc(t,f,"triangle",o,.11,dur,{a:.03,vib:9});osc(t,f*2,"sine",o,.02,dur,{a:.03});}
+  else if(L==="saw"){osc(t,f,"sawtooth",o,.045,dur,{vib:7});osc(t,f*1.005,"sawtooth",o,.03,dur);}
+  else if(L==="square"){osc(t,f,"square",o,.04,dur,{hold:.4});}
+  else osc(t,f,"pulse",o,.06,dur,{vib:8});}
+ function stepAt(i){const th=bg.th,song=bg.song,bar=Math.floor(i/16)%16,s=i%16,t=bg.next,sp=bg.sp,sect=song.sect[bar],chord=(sect?th.progB:th.prog)[bar%4];
+  // 멜로디(8분음표 칸)
+  if(s%2===0){const row=song.mel[bar],k=s/2,n=row[k];if(typeof n==="number"){let len=1;for(let j=k+1;j<8&&row[j]==="h";j++)len++;lead(th,t,freqOf(th,n)*(sect?1:1),sp*2*len*.92);}}
+  // 베이스: 으뜸음-옥타브 통통
+  const bf=freqOf(th,chord)/2;if(th.drum==="march"){if(s%4===0)osc(t,s%8===0?bf/2:bf*.75,"triangle",bg.out,.16,sp*1.6,{a:.004,hold:.3});}
+  else if(s%2===0)osc(t,(s%4===0?bf/2:bf),"triangle",bg.out,.15,sp*1.5,{a:.004,hold:.3});
+  // 코드 반주
+  const cf=[0,2,4].map(d=>freqOf(th,chord+d+7)/2);
+  if(th.stab==="ska"&&s%4===2)cf.forEach(f=>osc(t,f,"square",bg.out,.018,sp*.9,{a:.002,hold:.2,r:sp*.5}));
+  else if(th.stab==="pluck"&&(s%4===2||s===7))cf.forEach(f=>osc(t,f,"triangle",bg.out,.035,sp*1.2,{a:.002,hold:.1}));
+  else if(th.stab==="soft"&&s%8===0)cf.forEach(f=>osc(t,f,"sine",bg.out,.03,sp*7,{a:.08,hold:.5,r:sp*3}));
+  else if(th.stab==="march"&&s%4===2)cf.forEach(f=>osc(t,f*2,"pulse",bg.out,.014,sp*.8,{a:.002,hold:.2}));
+  else if(th.stab==="arp")osc(t,cf[s%3]*2,"square",bg.out,.014,sp*.8,{a:.002,hold:.2});
+  // 드럼
+  const D=th.drum,kick=()=>osc(t,150,"sine",bg.out,.32,.13,{a:.002,drop:42,hold:.1,r:.12}),snare=()=>{nz(t,.12,.13,"bandpass",1900,.8);osc(t,190,"triangle",bg.out,.06,.07,{a:.002});},hat=(o=.035)=>nz(t,.03,o,"highpass",7500);
+  if(D==="pop"){if(s===0||s===8||s===10)kick();if(s===4||s===12)snare();if(s%2===0)hat();if(s===14)nz(t,.12,.03,"highpass",6000);}
+  else if(D==="dance"){if(s%4===0)kick();if(s===4||s===12)snare();if(s%4===2)nz(t,.08,.045,"highpass",6500);else if(s%2===0)hat(.02);}
+  else if(D==="light"){if(s===0||s===8)kick();if(s===12)snare();if(s%4===2)hat(.025);}
+  else if(D==="tom"){if(s===0||s===6||s===8)kick();if(s===4||s===12)osc(t,220,"sine",bg.out,.12,.15,{drop:120});if(s%2===0)hat(.025);}
+  else if(D==="march"){if(s%8===0)kick();if(s%4===2||s===14||s===15)nz(t,.06,.07,"bandpass",2200);if(s===12)snare();}
+ }
+ function bgmTick(){if(!bg||!ac||ac.state!=="running")return;const th=bg.th;if(bg.next<ac.currentTime-.05)bg.next=ac.currentTime+.05;
+  while(bg.next<ac.currentTime+.2){const base=60/(th.bpm*(bg.fast?1.15:1))/4;let sp=base;if(th.swing)sp=bg.i%2===0?base*2*th.swing:base*2*(1-th.swing);bg.sp=base;stepAt(bg.i);bg.i++;bg.next+=sp;}}
+ function bgm(kind){want=kind;if(!bgmOn)return;const c=boot();if(!c)return;const th=THEMES[kind]||THEMES.rock;if(bg&&bg.kind===kind)return;bgmStop();
+  const out=c.createGain();out.gain.value=.55;out.connect(master);const ld=c.createGain(),dl=c.createDelay(1),fb=c.createGain(),wet=c.createGain();dl.delayTime.value=60/th.bpm*.75;fb.gain.value=.28;wet.gain.value=.22;ld.connect(out);ld.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(out);
+  bg={kind,th,out,lead:ld,song:compose(th),i:0,next:c.currentTime+.12,sp:.1,timer:setInterval(bgmTick,40),fast:false};}
+ function bgmStop(){if(!bg)return;clearInterval(bg.timer);try{bg.out.gain.setTargetAtTime(0,ac.currentTime,.06);const o=bg.out;setTimeout(()=>o.disconnect(),500);}catch{}bg=null;}
  function brk(kind){if(kind==="snow"){tone(900,500,.07,"sine");noise(.08);}else if(kind==="crate"){tone(240,110,.07,"square");noise(.1);}else if(kind==="tree"){noise(.14);tone(330,200,.06,"triangle");}else if(kind==="crystal"){tone(1500,2100,.09,"triangle");tone(1900,0,.12,"sine",.04);}else noise(.1);}
  const seq=(fs,type="triangle")=>fs.forEach((f,i)=>tone(f,0,.18,type,i*.1));return {bgm,bgmStop,bgmFast(v){if(bg)bg.fast=v;},brk,ghost(){seq([880,660,990],"sine");},curse(){seq([300,240,180],"square");},unlock(){const c=boot();if(c&&c.state==="suspended")c.resume().catch(()=>{});if(bgmOn&&want&&!bg)bgm(want);},set(v){on=v;if(sfxBus)sfxBus.gain.value=v?1:0;},setBgm(v){bgmOn=v;if(!v)bgmStop();else if(want)bgm(want);},bomb(){tone(430,170,.09);},boom(){noise();tone(190,44,.3);},item(){seq([680,1020]);},big(){seq([520,780,1180]);},trap(){tone(620,210,.24);},save(){tone(430,900,.17,"triangle");},die(){tone(300,58,.45,"sawtooth");},hit(){tone(165,110,.1,"square");},pop(){tone(900,1500,.08,"triangle");},ride(){seq([330,440,550,660]);},clear(){seq([523,659,784,1047]);},fail(){seq([392,330,262],"sawtooth");},boss(){noise(.5);tone(110,60,.6,"sawtooth");},shot(){tone(900,400,.12);},warn(){seq([320,320],"square");},ui(){tone(820,0,.03,"square");}};})();
 function freeze(ms){if(G)G.freeze=Math.max(G.freeze,reducedMotion?0:ms);}
