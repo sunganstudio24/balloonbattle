@@ -719,7 +719,10 @@ const CHARS=[
  {name:"디지니",color:"#ff8a3d",style:0,bombs:2,power:1,speed:1,needles:0,maxB:7,maxP:9,maxS:5,strong:"물줄기 최장",tag:"물풍선 2개로 시작. 물줄기 9칸까지. 처음엔 느림."},
  {name:"마리드",color:"#7cc9f5",style:1,bombs:2,power:1,speed:1,needles:0,maxB:9,maxP:6,maxS:5,strong:"물풍선 2개",tag:"물풍선 2개로 시작, 9개까지. 물줄기 6칸."},
  {name:"에띠",color:"#a77be0",style:2,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:8,maxS:5,strong:"후반형",tag:"물풍선 10 · 물줄기 8. 처음엔 느림."},
- {name:"케피",color:"#8e98a8",style:3,bombs:1,power:2,speed:1,needles:0,maxB:9,maxP:8,maxS:5,strong:"물줄기 2칸",tag:"물줄기 2칸으로 시작. 물풍선 9 · 물줄기 8. 처음엔 느림."}
+ {name:"케피",color:"#8e98a8",style:3,bombs:1,power:2,speed:1,needles:0,maxB:9,maxP:8,maxS:5,strong:"물줄기 2칸",tag:"물줄기 2칸으로 시작. 물풍선 9 · 물줄기 8. 처음엔 느림."},
+ /* 히든: 랜덤을 골랐을 때만 낮은 확률로 한 판에 한 명 */
+ {name:"로두마니",color:"#6b3fa0",style:3,bombs:3,power:3,speed:3,needles:0,maxB:9,maxP:7,maxS:6,strong:"히든",hidden:true,tag:"히든 캐릭터. 물풍선 3·물줄기 3·속도 크아 6으로 시작."},
+ {name:"산타",color:"#d93a3a",style:0,bombs:2,power:2,speed:2,needles:0,maxB:9,maxP:8,maxS:6,strong:"히든",hidden:true,tag:"히든 캐릭터. 물풍선 2·물줄기 2로 시작, 물줄기 8까지."}
 ];
 const ITEMS=[
  {id:"bomb",kind:"stat",w:30,sw:14,color:"#4aa8ff",label:"물풍선 +1",desc:"동시 설치 개수 +1. 최대치는 캐릭터마다 다름(6~10개)."},
@@ -967,11 +970,12 @@ function slotKey(slot,seats=humanSeats()){return slot<seats.length?seats[slot].k
 /* 팀전 편 가르기. 직접 고른 값이 없으면 앞 절반 A팀, 뒤 절반 B팀. */
 function teamOf(slot,count,seats=humanSeats()){const v=sel.teamPick?.[slotKey(slot,seats)];return v===0||v===1?v:slot<Math.ceil(count/2)?0:1;}
 function teamsValid(count,seats=humanSeats()){const t=Array.from({length:count},(_,i)=>teamOf(i,count,seats));return t.includes(0)&&t.includes(1);}
-function createMatchPlayers(count,humans=1,form=sel.form){
+function createMatchPlayers(count,humans=1,form=sel.form){const hiddenUsed=new Set();
  const seats=humanSeats();
  return Array.from({length:count},(_,slot)=>{
   const hs=slot<humans?seats[slot]:null,opt=botOption(slot),choice=hs?hs.char:opt.char;
-  const char=validCharacter(choice)&&choice>=0?choice:Math.floor(Math.random()*CHARS.length);
+  let char=validCharacter(choice)&&choice>=0&&!CHARS[choice]?.hidden?choice:Math.floor(Math.random()*8);
+  if(!(validCharacter(choice)&&choice>=0)){for(const h of [8,9])if(!hiddenUsed.has(h)&&Math.random()<.015){char=h;hiddenUsed.add(h);break;}}
   // 슬롯마다 독립 추첨한다. 앞서 정해진 캐릭터·성향을 후보에서 빼지 않는다.
   return {id:"e"+slot,slot,char,skin:hs?(hs.skin|0):(slot*3+1)%4,name:CHARS[char].name,human:!!hs,ctl:hs?hs.ctl:null,netId:hs?.netId||null,seat:hs?.seat||0,team:form==="team"?teamOf(slot,count,seats):null,diff:hs?null:opt.diff,persona:hs?1:Math.floor(Math.random()*PERSONA.length)};
  });
@@ -2120,6 +2124,8 @@ function avatarSVG(ci,dir="down",portrait=false,mounted=false){
   :ci===4?`<path d="M20 36 24 0l26 20Z" fill="${c.color}"/><path d="M100 36 96 0 70 20Z" fill="${c.color}"/><path d="M26 22 27 9l10 9Z" fill="#fff4e6" stroke="none"/><path d="M94 22 93 9l-10 9Z" fill="#fff4e6" stroke="none"/>`
   :ci===5?`<circle cx="38" cy="16" r="13" fill="#fff"/><circle cx="60" cy="9" r="15" fill="#fff"/><circle cx="82" cy="16" r="13" fill="#fff"/><circle cx="24" cy="27" r="9" fill="#fff"/><circle cx="96" cy="27" r="9" fill="#fff"/>`
   :ci===6?`<path d="M22 32 26 4l22 16Z" fill="${c.color}"/><path d="M98 32 94 4 72 20Z" fill="${c.color}"/><path d="M28 22 29 12l8 6Z" fill="#ffc6e0" stroke="none"/><path d="M92 22 91 12l-8 6Z" fill="#ffc6e0" stroke="none"/>`
+  :ci===8?`<path d="M30 30 22 4l20 18Z" fill="#3a2258"/><path d="M90 30 98 4 78 22Z" fill="#3a2258"/><path d="M38 24h44l-6-8H44Z" fill="#ffd84d" stroke="none"/>`
+  :ci===9?`<path d="M28 34Q40 -6 92 10L84 34Z" fill="#d93a3a"/><circle cx="96" cy="12" r="9" fill="#fff"/><rect x="22" y="28" width="76" height="12" rx="6" fill="#fff"/>`
   :`<circle cx="26" cy="22" r="12" fill="${dk}"/><circle cx="94" cy="22" r="12" fill="${dk}"/><circle cx="26" cy="22" r="6" fill="${lt}" stroke="none"/><circle cx="94" cy="22" r="6" fill="${lt}" stroke="none"/>`;
  let face=dir==="up"?`<path d="M29 61q10 23 31 24t31-24" fill="none" stroke="${dk}" stroke-width="4"/><path d="M37 34q-8 4-12 14" fill="none" stroke="${lt}" stroke-width="5" stroke-linecap="round"/>`:`<g transform="translate(${side} 0)"><path d="M29 53c0-20 62-20 62 0v21c0 20-17 29-31 29S29 93 29 74Z" fill="#ffe8d2" stroke="${dk}" stroke-width="2"/><path d="M30 55q3-24 30-22t30 22l-13-7 1 7-16-8-3 9-13-9-8 11Z" fill="${ci===0?'#814e3e':'#3e4a64'}" stroke="none"/><ellipse cx="46" cy="70" rx="9" ry="12" fill="white" stroke="none"/><ellipse cx="75" cy="70" rx="9" ry="12" fill="white" stroke="none"/><ellipse cx="${47+side*.35}" cy="73" rx="5" ry="8" fill="#193652" stroke="none"/><ellipse cx="${74+side*.35}" cy="73" rx="5" ry="8" fill="#193652" stroke="none"/><circle cx="${45+side*.35}" cy="69" r="2" fill="white" stroke="none"/><circle cx="${72+side*.35}" cy="69" r="2" fill="white" stroke="none"/><ellipse cx="36" cy="83" rx="6" ry="3" fill="#f4ad9b" stroke="none"/><ellipse cx="84" cy="83" rx="6" ry="3" fill="#f4ad9b" stroke="none"/><path d="M54 87q6 7 13 0" fill="none" stroke="#ac6f57" stroke-width="2.6" stroke-linecap="round"/>${ci===3?'<path d="M32 63h22v15H33Zm34 0h22v15H66Z" fill="#a2e6f3" fill-opacity=".14" stroke="#886a2d" stroke-width="3"/><path d="M55 68h10" fill="none" stroke="#886a2d" stroke-width="3"/>':''}</g>`;
  return `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="${portrait?115:148}" viewBox="0 0 120 ${portrait?115:148}" aria-hidden="true"><g stroke="${line}" stroke-width="2.3" stroke-linejoin="round">${portrait||mounted?'':'<ellipse cx="60" cy="140" rx="35" ry="5" fill="#16416b" fill-opacity=".11" stroke="none"/>'}${mounted?'':`<rect x="32" y="123" width="24" height="14" rx="7" fill="${dk}"/><rect x="64" y="123" width="24" height="14" rx="7" fill="${dk}"/>`}<path d="M38 89q22-10 44 0l1 35q-23 10-46 0Z" fill="${c.color}"/><ellipse cx="28" cy="103" rx="12" ry="14" fill="${c.color}"/><ellipse cx="92" cy="103" rx="12" ry="14" fill="${c.color}"/><path d="M45 104q15 7 30 0v15q-15 7-30 0Z" fill="${lt}" stroke="none"/>${hat}<path d="M17 59C17 0 103 0 103 59v15c0 29-26 37-43 37S17 103 17 74Z" fill="${c.color}"/><path d="M22 49c4-28 28-32 43-31-19 3-29 13-31 26Z" fill="${lt}" stroke="none"/>${face}${ci===7&&dir!=='up'?`<path d="M19 50q41-26 82 0l-3 8q-38-20-76 0Z" fill="${dk}"/><circle cx="60" cy="36" r="4" fill="#ffd84d"/>`:''}${ci===6&&dir!=='up'?`<path d="M22 78h12M22 84h11M86 78h12M87 84h11" fill="none" stroke="#6b4a8c" stroke-width="2" stroke-linecap="round"/>`:''}${ci===1&&dir!=='up'?`<path d="M19 48q41-30 82 0l-10 9q-31-17-62 0Z" fill="${c.color}"/><path d="M31 44q17-9 32-7" fill="none" stroke="${lt}" stroke-width="4" stroke-linecap="round"/>`:''}<circle cx="60" cy="110" r="6" fill="#c4f4ff" stroke="#3e94b5" stroke-width="2"/><circle cx="59" cy="108" r="2" fill="white" stroke="none"/></g></svg>`;
@@ -3111,7 +3117,7 @@ $("roomSlots").addEventListener("click",ev=>{
 });
 /* ───────── 첫 화면(로비) ───────── */
 function renderLobbyArt(){
- $("entryHero").innerHTML=CHARS.map((c,i)=>`<span>${avatarSVG(i)}</span>`).join("");
+ $("entryHero").innerHTML=CHARS.filter(c=>!c.hidden).map((c,i)=>`<span>${avatarSVG(i)}</span>`).join("");
  $("artOne").innerHTML=avatarSVG(0,"down",true);$("artTwo").innerHTML=avatarSVG(0,"down",true)+avatarSVG(1,"down",true);
 }
 let bgmPref="on";try{bgmPref=localStorage.getItem("bbBgm")||"on"}catch(e){}
@@ -3168,7 +3174,7 @@ $("chatForm").addEventListener("submit",ev=>{
 
 /* 설정 */
 $("mapOpts").innerHTML=MAPS.map((m,i)=>`<button class="opt" data-v="${i}"><span class="map-thumb">${mapPreviewSVG(i)}</span>${m.name}</button>`).join("")+`<button class="opt" data-v="-1"><span class="map-thumb">${mapPreviewSVG(-1)}</span>랜덤</button>`;
-$("charOpts").innerHTML=CHARS.map((c,i)=>`<button class="opt" data-v="${i}" style="--char-pale:${c.color}12"><span class="char-thumb">${avatarSVG(i,"down",true)}</span><span>${c.name}</span><small>${c.strong}</small></button>`).join("")+`<button class="opt random-char" data-v="-1"><span class="char-thumb">${randomCharacterSVG()}</span><span>랜덤</span><small>시작할 때 결정</small></button>`;
+$("charOpts").innerHTML=CHARS.filter(c=>!c.hidden).map((c,i)=>`<button class="opt" data-v="${i}" style="--char-pale:${c.color}12"><span class="char-thumb">${avatarSVG(i,"down",true)}</span><span>${c.name}</span><small>${c.strong}</small></button>`).join("")+`<button class="opt random-char" data-v="-1"><span class="char-thumb">${randomCharacterSVG()}</span><span>랜덤</span><small>시작할 때 결정</small></button>`;
 const WIRES=[["modeOpts","mode"],["playOpts","play"],["seatOpts","seats",Number],["formOpts","form"],["mapOpts","map",Number],["charOpts","char",Number],["botOpts","bots",Number],["roundOpts","rounds"],["timeOpts","timeLimit"],["ctrlOpts","ctrl"],["sndOpts","snd"]];
 function restoreSettings(prev){
  if(!prev||typeof prev!=="object"||Array.isArray(prev))prev={};
@@ -3183,8 +3189,8 @@ let storedSettings=null;
 for(const key of ["water-battle-settings-v3","water-battle-settings-v2"]){try{const value=JSON.parse(localStorage.getItem(key)||"null");if(value&&typeof value==="object"&&!Array.isArray(value)){storedSettings=value;break;}}catch{}}
 restoreSettings(storedSettings);
 function renderBotSetup(){
- if(NET.role==="guest"){$("botSetup").innerHTML='<p>인원·봇·맵은 방장이 정해요. 팀전이면 온라인 칸의 명단에서 내 팀을 고를 수 있어요.</p>'+(sel.seats===2?`<section class="bot-config"><header><b>이 컴퓨터 2P</b><span>방향키 · Enter</span></header><div class="bot-fields"><label for="p2Char">캐릭터<select id="p2Char" data-setting="p2char"><option value="-1" ${sel.p2char===-1?"selected":""}>랜덤</option>${CHARS.map((c,i)=>`<option value="${i}" ${sel.p2char===i?"selected":""}>${c.name}</option>`).join("")}</select></label></div></section>`:"");return;}
- const {form,humans,count}=matchShape(),seats=humanSeats(),charSel=(id,val,attr)=>`<select id="${id}" ${attr}><option value="-1" ${val===-1?"selected":""}>랜덤</option>${CHARS.map((c,i)=>`<option value="${i}" ${val===i?"selected":""}>${c.name}</option>`).join("")}</select>`;
+ if(NET.role==="guest"){$("botSetup").innerHTML='<p>인원·봇·맵은 방장이 정해요. 팀전이면 온라인 칸의 명단에서 내 팀을 고를 수 있어요.</p>'+(sel.seats===2?`<section class="bot-config"><header><b>이 컴퓨터 2P</b><span>방향키 · Enter</span></header><div class="bot-fields"><label for="p2Char">캐릭터<select id="p2Char" data-setting="p2char"><option value="-1" ${sel.p2char===-1?"selected":""}>랜덤</option>${CHARS.filter(c=>!c.hidden).map((c,i)=>`<option value="${i}" ${sel.p2char===i?"selected":""}>${c.name}</option>`).join("")}</select></label></div></section>`:"");return;}
+ const {form,humans,count}=matchShape(),seats=humanSeats(),charSel=(id,val,attr)=>`<select id="${id}" ${attr}><option value="-1" ${val===-1?"selected":""}>랜덤</option>${CHARS.filter(c=>!c.hidden).map((c,i)=>`<option value="${i}" ${val===i?"selected":""}>${c.name}</option>`).join("")}</select>`;
  const who=slot=>{const h=seats[slot];if(!h)return "봇";if(h.owner==="host")return h.seat?"이 컴퓨터 2P":NET.role==="host"&&sel.play==="online"?"나(방장)":"나";return "친구"+(h.seat?" 2P":"");};
  const rows=[];
  if(form==="team"){
