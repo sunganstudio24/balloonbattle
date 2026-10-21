@@ -475,6 +475,27 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
 .lhud-keys kbd{display:inline-block;min-width:44px;text-align:center;background:#0b2550;border:1px solid #5d8fdc;border-radius:6px;padding:2px 6px;margin-right:6px;font:800 11px system-ui,sans-serif;color:#ffe45c}
 #app:not(.touch) .keyhint{display:none!important}
 #app:not(.touch) #stage{order:1}
+
+/* PC 레이아웃(토론 결론): 판+오른쪽 패널 한 덩어리 가운데, 얇은 저채도 패널, 노랑은 타이머·내 슬롯만 */
+#app:not(.touch) #arena{background:radial-gradient(#ffffff08 1.5px,transparent 1.5px) 0 0/22px 22px,#0a1a36!important}
+#app:not(.touch) #hud{width:calc(clamp(300px,22vw,440px) / var(--hz,1))!important;zoom:var(--hz,1)!important;height:auto!important;max-height:calc(100% / var(--hz,1))!important;align-self:stretch!important;background:#13284f!important;border:2px solid #9cc8ff40!important;box-shadow:none!important;border-radius:14px!important;padding:14px!important}
+#app:not(.touch) #hud .hudgrid,#app:not(.touch) #hud .rail-heading,#app:not(.touch) #hud .bot-meta{display:none!important}
+#app:not(.touch) #hudTimer:not(:empty){background:#0a1a36!important;border:1px solid #9cc8ff40!important;font-size:26px!important}
+#app:not(.touch) #hudTimer .round-clock{font-size:26px!important}
+#app:not(.touch) #hud #roster{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
+#app:not(.touch) #hud .member{display:flex!important;align-items:center;gap:10px;background:#0f2145!important;border:1px solid #9cc8ff30!important;border-left:5px solid var(--player)!important;border-radius:10px!important;padding:6px 10px!important;min-height:0!important;box-shadow:none!important}
+#app:not(.touch) #hud .member.me{border:2px solid #ffd84d!important;border-left:5px solid var(--player)!important;background:#16305e!important}
+#app:not(.touch) #hud .member-portrait{width:38px!important;height:38px!important;flex:none}
+#app:not(.touch) #hud .member b{font-size:14px;color:#fff!important}
+#app:not(.touch) #hud .member small{font-size:11px;color:#ffb0b8!important}
+#app:not(.touch) #hud .member.out{opacity:.4;filter:grayscale(.8)}
+#app:not(.touch) #hud .member.trapped{background:#2a2a5e!important}
+#app:not(.touch) #hud .member.trapped small{color:#9fd8ff!important;font-weight:900}
+.me-stats{display:none}
+#app:not(.touch) .me-stats{display:grid;grid-template-columns:repeat(3,auto);gap:4px 12px;margin-top:6px}
+.me-stats i{font-style:normal;display:flex;align-items:center;gap:4px}.me-stats .ico{width:16px;height:16px}.me-stats b{font-size:14px!important;color:#ffe45c!important;font-variant-numeric:tabular-nums}
+#app:not(.touch) #hud #stateLine{color:#9fb6d9!important;font-size:12px!important;border-color:#9cc8ff30!important}
+.pause-keys{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12px;color:#33536b;padding-top:4px}.pause-keys kbd{background:#e6f0fa;border:1px solid #b9cfe3;border-radius:5px;padding:1px 6px;font:800 11px system-ui,sans-serif;margin-right:4px}
 </style>
 </head>
 <body>
@@ -601,7 +622,7 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
  <div id="charPick" class="cp" hidden role="dialog" aria-modal="true" aria-label="캐릭터 선택"><div class="cp-box"><header class="cp-head"><b id="cpTitle">캐릭터 선택</b><button type="button" class="cp-x" id="cpClose" aria-label="닫기">×</button></header><div class="cp-main"><div class="cp-grid" id="cpGrid"></div><div class="cp-info" id="cpInfo"></div></div><div class="cp-skins"><b>물풍선</b><div id="cpSkins"></div></div><footer class="cp-foot"><button type="button" class="cp-ok" id="cpOk">이 캐릭터로 결정</button></footer></div></div>
  <section class="screen hide" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle"><div class="dialog-shell"><div class="sbody" id="overlayBody">
   <div class="dialog-head"><div class="dialog-symbol" id="overlaySymbol"><span class="ui-icon" data-ui="pause"></span></div><div><h2 id="overlayTitle" tabindex="-1">잠깐 쉬어가기</h2><p class="hint" id="overlayNote"></p></div></div>
-  <div class="card vol-box" id="volBox" hidden><label><span>BGM</span><input type="range" id="volB" min="0" max="100"><b id="volBv"></b></label><label><span>효과음</span><input type="range" id="volS" min="0" max="100"><b id="volSv"></b></label></div>
+  <div class="card vol-box" id="volBox" hidden><label><span>BGM</span><input type="range" id="volB" min="0" max="100"><b id="volBv"></b></label><label><span>효과음</span><input type="range" id="volS" min="0" max="100"><b id="volSv"></b></label><div class="pause-keys"><span><kbd>↑↓←→</kbd> 이동</span><span><kbd>Space</kbd> 물풍선</span><span><kbd>Ctrl</kbd> 아이템</span><span><kbd>Esc</kbd> 일시정지</span></div></div>
   <div class="card" id="pauseInfo"></div>
   <div class="catalog-tabs" id="catalogTabs" aria-label="도감 분류" hidden><button class="sel" data-filter="all" aria-pressed="true">전체</button><button data-filter="stat" aria-pressed="false">성장</button><button data-filter="hold" aria-pressed="false">소지품</button><button data-filter="ride" aria-pressed="false">탈것</button><button data-filter="mob" aria-pressed="false">몬스터·보스</button></div>
   <div class="catalog" id="catalog" hidden></div>
@@ -2087,7 +2108,7 @@ for(let ci=0;ci<CHARS.length;ci++)for(const dir of ["up","down","left","right"])
  AVATAR_IMAGES[ci+":"+dir+(mounted?":ride":"")]=im;
 }
 function paintChrome(){document.querySelectorAll('[data-ui]').forEach(e=>e.innerHTML=uiSVG(e.dataset.ui));document.querySelectorAll('[data-art="balloon"]').forEach(e=>e.innerHTML=balloonSVG());}
-function playChrome(show){$("playTop").hidden=!show;$("app").classList.toggle("touch",touchMode);const L=$("lhud"),g=document.querySelector(".hudgrid");if(!L||!g)return;const pc=show&&!touchMode;L.hidden=!pc;if(pc){if(g.parentElement.id!=="lhudBody")$("lhudBody").appendChild(g);}else if(g.parentElement.id==="lhudBody")$("duoHud").after(g);}
+function playChrome(show){$("playTop").hidden=!show;$("app").classList.toggle("touch",touchMode);const L=$("lhud"),g=document.querySelector(".hudgrid");if(!L||!g)return;const pc=false;L.hidden=true;if(pc){if(g.parentElement.id!=="lhudBody")$("lhudBody").appendChild(g);}else if(g.parentElement.id==="lhudBody")$("duoHud").after(g);}
 let menuAvatarKey=null,uiAnnounceKey="",scoreboardKey="";
 function randomCharacterSVG(){return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 148" aria-hidden="true"><ellipse cx="60" cy="137" rx="36" ry="7" fill="#308dc2" opacity=".15"/><g transform="rotate(-8 60 73)"><rect x="12" y="27" width="96" height="96" rx="25" fill="#eaf8ff" stroke="#217cb8" stroke-width="4"/><path d="M17 52q0-20 21-20h40" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/><circle cx="32" cy="48" r="7" fill="#f65b65"/><circle cx="89" cy="48" r="7" fill="#eebf4f"/><circle cx="32" cy="101" r="7" fill="#6cc36c"/><circle cx="89" cy="101" r="7" fill="#299fec"/><text x="60" y="96" text-anchor="middle" fill="#146fb0" font-family="system-ui,sans-serif" font-weight="900" font-size="60">?</text></g></svg>`;}
 function updateLobby(){
@@ -2429,7 +2450,7 @@ function markPhone(){document.documentElement.classList.toggle("phone",isPhone()
 markPhone();window.addEventListener("resize",markPhone);
 function sizeCtrl(){const viewport=window.visualViewport,w=window.innerWidth||360,h=viewport&&Math.abs(viewport.scale-1)<.01&&viewport.height>0?viewport.height:window.innerHeight||700,land=touchMode&&w>h&&h<560;document.documentElement.style.setProperty("--app-height",Math.round(h)+"px");document.documentElement.style.setProperty("--ui",(touchMode?1:Math.max(1,Math.min(1.7,Math.min(w/1280,h/720)))).toFixed(3));$("app").classList.toggle("land",land);$("app").classList.toggle("touch",touchMode);let u=land?Math.max(.78,Math.min(1.08,h*.52/190)):Math.max(.78,Math.min(Math.max(140,Math.min(195,h*.27))/186,w/360));document.documentElement.style.setProperty("--u",u.toFixed(3));}
 function resize(){const wrap=$("stage"),cs=getComputedStyle(wrap),pw0=parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight),ph0=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);let w=wrap.clientWidth-pw0,h=wrap.clientHeight-ph0;
- if(!touchMode){const hz=Math.max(1,Math.min(1.75,(window.innerHeight-90)/600,(window.innerWidth*.22)/250));document.documentElement.style.setProperty("--hz",hz.toFixed(3));}
+ if(!touchMode){const hz=Math.max(1,Math.min(1.35,(window.innerHeight-90)/700));document.documentElement.style.setProperty("--hz",hz.toFixed(3));}
  if(!touchMode){const ar=$("arena"),as=getComputedStyle(ar),hud=$("hud"),lh=$("lhud"),hw=(hud.hidden?0:hud.getBoundingClientRect().width+parseFloat(as.columnGap||0))+(lh.hidden?0:lh.getBoundingClientRect().width+parseFloat(as.columnGap||0));w=ar.clientWidth-parseFloat(as.paddingLeft)-parseFloat(as.paddingRight)-hw-pw0;h=ar.clientHeight-parseFloat(as.paddingTop)-parseFloat(as.paddingBottom)-ph0;}if(w<=0||h<=0)return;ts=Math.max(1,Math.floor(Math.min((w-6)/CFG.COLS,(h-4)/CFG.ROWS)));const cw=ts*CFG.COLS,ch=ts*CFG.ROWS,dpr=Math.min(2,window.devicePixelRatio||1),pw=Math.round(cw*dpr),ph=Math.round(ch*dpr);if(!touchMode){wrap.style.width=(cw+pw0+6)+"px";}else wrap.style.width="";if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;cv.style.width=cw+"px";cv.style.height=ch+"px";ctx.setTransform(dpr,0,0,dpr,0,0);}if(G)draw();}
 let resizeQueued=false;function scheduleResize(){if(resizeQueued)return;resizeQueued=true;requestAnimationFrame(()=>{resizeQueued=false;clearInputs();sizeCtrl();resize();});}
 window.addEventListener("resize",scheduleResize);window.addEventListener("orientationchange",scheduleResize);window.visualViewport?.addEventListener("resize",scheduleResize);if(window.ResizeObserver)new ResizeObserver(()=>{if(G)resize();}).observe($("stage"));
@@ -2464,13 +2485,13 @@ function renderDuoHud(){
 }
 function buildRoster(){
  buildDuoHud();
- $("roster").innerHTML=G.ents.map(e=>`<button class="member ${isEnemy(e,G.me)?"enemy":"ally"} ${G.form==="ffa"?"ffa-member":""}" style="--player:${teamColor(e)}" data-actor="${e.id}" id="member_${e.id}" aria-label="${roleName(e)} ${e.name}, 소지품 보기"><span class="member-portrait" aria-hidden="true">${avatarSVG(e.char,"down",true)}</span><span class="member-info"><b><span class="member-role">${roleName(e)}</span> ${e.name}</b><small id="memberState_${e.id}">생존</small>${e.isBot?`<small class="bot-meta">${botSummary(e)}</small>`:""}</span></button>`).join("");
+ $("roster").innerHTML=G.ents.map(e=>`<button class="member ${e===G.me?"me ":""}${isEnemy(e,G.me)?"enemy":"ally"} ${G.form==="ffa"?"ffa-member":""}" style="--player:${teamColor(e)}" data-actor="${e.id}" id="member_${e.id}" aria-label="${roleName(e)} ${e.name}, 소지품 보기"><span class="member-portrait" aria-hidden="true">${avatarSVG(e.char,"down",true)}</span><span class="member-info"><b><span class="member-role">${roleName(e)}</span> ${e.name}</b><small id="memberState_${e.id}"></small>${e.isBot?`<small class="bot-meta">${botSummary(e)}</small>`:""}${e===G.me?`<span class="me-stats"><i><span class="ico" data-icon="bomb"></span><b id="ms_b"></b></i><i><span class="ico" data-icon="power"></span><b id="ms_p"></b></i><i><span class="ico" data-icon="roller"></span><b id="ms_s"></b></i><i><span class="ico" data-icon="needle"></span><b id="ms_n"></b></i><i><span class="ico" data-icon="shield"></span><b id="ms_sh"></b></i><i><span class="ico" data-icon="tele"></span><b id="ms_t"></b></i></span>`:""}</span></button>`).join("");$("roster").querySelectorAll("[data-icon]").forEach(el=>el.innerHTML=iconSVG(el.dataset.icon));
 }
 let hudDirty=false,ffOn=false;
 /* 사람이 모두 탈락해 봇끼리만 남았을 때 빨리 보기(3배). 온라인 참가자 화면에서는 방장이 정한다. */
 function spectating(){return !!G&&G.mode==="battle"&&!G.over&&phase==="play"&&!G.ents.some(e=>e.alive&&e.human);}
 function updateHud(){hudDirty=true;}
-function renderHud(){hudDirty=false;if(!G||!MATCH)return;const p=G.me,cap=bombCapOf(p),active=activeBombs(p),available=Math.max(0,cap-active),ready=combatActive()&&p.alive,ride=rideOf(p);setText("sBomb",available+"/"+cap);setText("sBombSub","남음 / 전체");$("bombStat").title=`놓을 수 있는 물풍선 ${available}개 / 동시 설치 최대 ${cap}개 · 설치 중 ${active}개`;setText("sPower",p.power+"칸");setText("sSpeed",ride&&p.ride!=="tank"?spdShow(speedLevelOf(p)):spdShow(speedLevelOf(p))+"/"+spdShow(capS(p)));setText("sSpeedSub",ride&&p.ride!=="tank"?rideName(p)+" 고정":"최대 "+spdShow(capS(p))+"단계");setText("sPowerSub","최대 "+capP(p)+"칸");
+function renderHud(){hudDirty=false;if(!G||!MATCH)return;{const m=G.me;if($("ms_b")){setText("ms_b",Math.max(0,bombCapOf(m)-activeBombs(m))+"/"+bombCapOf(m));setText("ms_p",m.power);setText("ms_s",speedLevelOf(m));setText("ms_n",m.needles);setText("ms_sh",m.shields||0);setText("ms_t",m.teleports||0);}}const p=G.me,cap=bombCapOf(p),active=activeBombs(p),available=Math.max(0,cap-active),ready=combatActive()&&p.alive,ride=rideOf(p);setText("sBomb",available+"/"+cap);setText("sBombSub","남음 / 전체");$("bombStat").title=`놓을 수 있는 물풍선 ${available}개 / 동시 설치 최대 ${cap}개 · 설치 중 ${active}개`;setText("sPower",p.power+"칸");setText("sSpeed",ride&&p.ride!=="tank"?spdShow(speedLevelOf(p)):spdShow(speedLevelOf(p))+"/"+spdShow(capS(p)));setText("sSpeedSub",ride&&p.ride!=="tank"?rideName(p)+" 고정":"최대 "+spdShow(capS(p))+"단계");setText("sPowerSub","최대 "+capP(p)+"칸");
  for(const [id,value]of [["Needle",p.needles],["Shield",p.shields],["Tele",p.teleports]]){setText("s"+id,value+"/3");$("i"+id).classList.toggle("empty",value===0);}
  const needle=ready&&p.trapped&&p.needles>0,tele=ready&&!p.trapped&&p.teleports>0;$("iNeedle").disabled=!needle;$("iTele").disabled=!tele;$("iNeedle").classList.toggle("usable",needle);$("iNeedle").classList.toggle("urgent",needle);$("iTele").classList.toggle("usable",tele);setText("sNeedleSub",needle?"지금 탈출!":"갇힌 뒤 사용");$("iNeedle").title=`바늘 ${p.needles}개 / 최대 3개 · 갇힌 뒤 아이템 키(Ctrl) 또는 이 버튼으로 탈출`;$("iShield").title=`방패 ${p.shields}개 / 최대 3개 · 탈것 다음에 자동 방어`;$("iTele").title=`순간이동 ${p.teleports}개 / 최대 3개 · 갇히지 않았을 때 아이템 키(Ctrl) 또는 이 버튼`;
  $("btnNeedle").disabled=!needle;$("btnNeedle").classList.toggle("urgent",needle);setText("padNeedleLabel",needle?"탈출!":"바늘");setText("padBombHint",p.trapped?"갇힘":!p.alive?"탈락":!ready?"준비 중":available?"놓을 수 있음":"터지면 충전");$("btnTele").disabled=!tele;$("btnBomb").disabled=!ready||p.trapped||!available;setText("padNeedle",p.needles);setText("padTele",p.teleports);setText("padBomb",available+"/"+cap);
@@ -2479,7 +2500,7 @@ function renderHud(){hudDirty=false;if(!G||!MATCH)return;const p=G.me,cap=bombCa
  if(G.mode==="battle"){
   setText("ffaStatus",zoneNote());$("ffaStatus").classList.toggle("warning",!!G.zoneQueue.length||!!G.zoneDeferred.length);
  }
- for(const e of G.ents){const el=$("member_"+e.id);if(!el)continue;el.classList.toggle("out",!e.alive);el.classList.toggle("trapped",e.trapped);setText("memberState_"+e.id,(G.form==="ffa"?MATCH.scores[e.id]+"승 · "+e.roundPoints+"점 · ":"")+(!e.alive?"탈락":e.trapped?"갇힘 "+Math.max(0,e.trapT/1000).toFixed(1)+"초":e.ride?rideName(e)+" · "+e.rideHp+"회 방어":"생존 · 소지품"));el.title=e.name+(e.isBot?" · "+botSummary(e):"")+" · 능력치와 아이템 보기";}
+ for(const e of G.ents){const el=$("member_"+e.id);if(!el)continue;el.classList.toggle("out",!e.alive);el.classList.toggle("trapped",e.trapped);setText("memberState_"+e.id,(G.form==="ffa"?MATCH.scores[e.id]+"승 · "+e.roundPoints+"점 · ":"")+(!e.alive?"탈락":e.trapped?"갇힘 "+Math.max(0,e.trapT/1000).toFixed(1)+"초":e.ride?rideName(e):""));el.title=e.name+(e.isBot?" · "+botSummary(e):"")+" · 능력치와 아이템 보기";}
  let state=G.form==="team"?"● 우리 팀 / ◆ 상대 팀 · 아군 물줄기도 주의":G.mode==="stage"?(G.isBoss?"빨간 칸 = 곧 공격 · 공격을 마치고 멈춘 보스를 노리세요":"몬스터를 모두 물리치세요 · 갇힌 몬스터는 밟으면 처치"):"명단을 누르면 능력치·소지품을 확인합니다";
  if(ride)state=`${rideName(p)} · 방어 ${p.rideHp}/${ride.hp}회 · ${ride.bombMax?"물풍선 8개 적용":"속도 "+speedLevelOf(p)+"단계 고정"}`;
  if(G.intro>0)state="준비 중 · 곧 시작합니다";
