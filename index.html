@@ -612,7 +612,7 @@ window.addEventListener("error",()=>{if(!gameUiReady){const notice=document.getE
  실제 브라우저 레이아웃·기기 터치감·WebAudio 출력은 별도 실기 확인이 필요.
  */
 /* 단일 파일 / 외부 의존성 없음. 좌표는 칸 단위, 시간은 ms(이동만 초). */
-const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.26,MAX_SPEED:9,MAX_BOMB:10,MAX_POWER:7,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:6000,MOB_DASH:4.6,MOB_REST:950,STAGE_POP:1400,RESPAWN_DELAY:1300,RESPAWN_INVULN:2600,STALL_HINT:40000,EGG_HATCH:5000,STAGE_DROP:.14,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,PUSH_MS:230,BUSH_RATE:.07,PUSH_RATE:.10,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:12000,ZONE_PLAN:16000};
+const CFG={COLS:15,ROWS:13,FUSE:2600,BLAST:420,TRAP:5200,INVULN:1400,DROP:.32,SPD_BASE:3.05,SPD_STEP:.52,MAX_SPEED:5,MAX_BOMB:10,MAX_POWER:7,HOLD_MAX:3,EPS:.0001,TURN_BOOST:2.8,TURTLE_FAST_CHANCE:.25,SKY_FIRST:12000,SKY_EVERY:9500,SKY_MIN:5500,SKY_STEP:450,SKY_FALL:720,SKY_MAX:14,MOB_TRAP:6000,MOB_DASH:4.6,MOB_REST:950,STAGE_POP:1400,RESPAWN_DELAY:1300,RESPAWN_INVULN:2600,STALL_HINT:40000,EGG_HATCH:5000,STAGE_DROP:.14,STALL:45000,STALL_GRACE:70000,STALL_STEP:230,WALL_WARN:900,ROUND_LIMIT:210000,ZONE_START:150000,ZONE_TAIL:8000,ZONE_DEPTH:4,ZONE_MIN:140,ZONE_MAX:900,ZONE_WARN:1100,ZONE_SFX:700,ZONE_SUDDEN_DELAY:15000,ZONE_SUDDEN_GAP:2400,SUDDEN_CAP:30000,AI_REACT:300,PUSH_MS:230,BUSH_RATE:.07,PUSH_RATE:.10,AI_COMMIT:900,AI_STUCK_GAP:1500,ZONE_SEE:12000,ZONE_PLAN:16000};
 const MAPS=[
  {name:"빙하",density:.87,holes:.02,sw:"#7ecbea",f1:"#e3f7fc",f2:"#cceaf4",grid:"rgba(30,90,130,.07)",hTop:"#65c9ee",hSide:"#2389b8",hEdge:"#c5f6ff",sTop:"#ffffff",sSide:"#b7d6e7",sEdge:"#f0fbff",hard:"ice",soft:"snow"},
  {name:"사막",density:.89,holes:.13,sw:"#e8b654",f1:"#fbe8bb",f2:"#f1d79b",grid:"rgba(120,80,20,.07)",hTop:"#d88f56",hSide:"#995530",hEdge:"#f3c18d",sTop:"#f2bf71",sSide:"#b07836",sEdge:"#ffe3ac",hard:"brick",soft:"crate"},
@@ -627,20 +627,20 @@ const MAPS=[
 const CHARS=[
  /* 크아처럼 캐릭터마다 최대치가 다르다(maxB 물풍선·maxP 물줄기·maxS 스피드). 스피드 내부 1단계 = 화면 표시 5.
     네 캐릭터 모두 나무위키 크아 수치(우니·모스는 문서 옛 판 기준). */
- {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:1,needles:0,maxB:6,maxP:7,maxS:9,strong:"스피드",tag:"스피드 9단계까지. 물풍선은 6개까지."},
- {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:7,maxS:5,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 5단계까지."},
- {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:1,needles:0,maxB:6,maxP:7,maxS:7,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6개 · 스피드 7단계까지."},
- {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:5,maxS:7,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 7단계 · 물줄기는 5칸까지."},
+ {name:"배찌",color:"#f65b65",style:0,bombs:1,power:1,speed:1,needles:0,maxB:6,maxP:7,maxS:5,strong:"스피드",tag:"스피드 5단계까지(크아 9). 물풍선은 6개까지."},
+ {name:"다오",color:"#299fec",style:1,bombs:1,power:1,speed:1,needles:0,maxB:10,maxP:7,maxS:3,strong:"물풍선",tag:"물풍선 최대 10개. 스피드는 3단계까지(크아 7)."},
+ {name:"우니",color:"#6cc36c",style:2,bombs:1,power:2,speed:1,needles:0,maxB:6,maxP:7,maxS:4,strong:"물줄기",tag:"물줄기 2칸으로 시작. 물풍선 6개 · 스피드 4단계까지."},
+ {name:"모스",color:"#eebf4f",style:3,bombs:1,power:1,speed:1,needles:1,maxB:8,maxP:5,maxS:4,strong:"바늘 1개",tag:"바늘 1개로 시작. 물풍선 8개 · 스피드 4단계 · 물줄기는 5칸까지."},
  /* 이 게임 오리지널 캐릭터 4명 */
- {name:"토토",color:"#ff8a3d",style:0,bombs:1,power:1,speed:1,needles:0,maxB:7,maxP:6,maxS:9,strong:"균형",tag:"여우 후드. 스피드 9단계까지, 물풍선 7 · 물줄기 6."},
- {name:"몽이",color:"#7cc9f5",style:1,bombs:2,power:1,speed:1,needles:0,maxB:9,maxP:5,maxS:5,strong:"물풍선 2개",tag:"구름 모자. 물풍선 2개로 시작, 9개까지. 물줄기는 5칸이 끝."},
- {name:"루루",color:"#a77be0",style:2,bombs:1,power:2,speed:1,needles:0,maxB:5,maxP:8,maxS:5,strong:"물줄기 최장",tag:"고양이 귀. 물줄기 8칸까지. 물풍선은 5개가 끝."},
- {name:"단단",color:"#8e98a8",style:3,bombs:1,power:1,speed:1,needles:0,shields:1,maxB:8,maxP:6,maxS:5,strong:"방패 1개",tag:"곰 헬멧. 방패 1개로 시작. 물풍선 8 · 물줄기 6."}
+ {name:"토토",color:"#ff8a3d",style:0,bombs:1,power:1,speed:1,needles:0,maxB:7,maxP:6,maxS:5,strong:"균형",tag:"여우 후드. 스피드 5단계까지, 물풍선 7 · 물줄기 6."},
+ {name:"몽이",color:"#7cc9f5",style:1,bombs:2,power:1,speed:1,needles:0,maxB:9,maxP:5,maxS:3,strong:"물풍선 2개",tag:"구름 모자. 물풍선 2개로 시작, 9개까지. 물줄기는 5칸이 끝."},
+ {name:"루루",color:"#a77be0",style:2,bombs:1,power:2,speed:1,needles:0,maxB:5,maxP:8,maxS:3,strong:"물줄기 최장",tag:"고양이 귀. 물줄기 8칸까지. 물풍선은 5개가 끝."},
+ {name:"단단",color:"#8e98a8",style:3,bombs:1,power:1,speed:1,needles:0,shields:1,maxB:8,maxP:6,maxS:3,strong:"방패 1개",tag:"곰 헬멧. 방패 1개로 시작. 물풍선 8 · 물줄기 6."}
 ];
 const ITEMS=[
  {id:"bomb",kind:"stat",w:30,sw:14,color:"#4aa8ff",label:"물풍선 +1",desc:"동시 설치 개수 +1. 최대치는 캐릭터마다 다름(6~10개)."},
  {id:"power",kind:"stat",w:30,sw:14,color:"#ff9330",label:"물줄기 +1",desc:"물줄기 길이 +1칸. 최대치는 캐릭터마다 다름(5~7칸)."},
- {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +1단계. 최대치는 캐릭터마다 다름(5~9단계)."},
+ {id:"roller",kind:"stat",w:27,sw:12,color:"#4fd06c",label:"롤러 +1",desc:"스피드 +1단계. 최대치는 캐릭터마다 다름(3~5단계, 크아 기준 7~9)."},
  {id:"needle",kind:"hold",w:7,sw:9,color:"#7d95ac",label:"바늘",desc:"갇힌 뒤 아이템 키(Ctrl)를 눌러 탈출. 최대 3개."},
  {id:"shield",kind:"hold",w:7,sw:9,color:"#ffd21f",label:"방패",desc:"피격을 자동으로 1회 방어. 최대 3개."},
  {id:"tele",kind:"hold",w:3,sw:7,color:"#b278ff",label:"순간이동",desc:"안전한 빈 칸으로 이동. 갇히지 않았을 때 아이템 키(Ctrl). 최대 3개."},
@@ -648,13 +648,13 @@ const ITEMS=[
  {id:"devil",kind:"stat",w:1,sw:6,color:"#ff2f5e",label:"붉은 악마",desc:"스피드를 즉시 캐릭터 최대치로."},
  {id:"owl",kind:"ride",w:1,sw:7,color:"#b895e3",label:"부엉이",desc:"탑승 중 속도 4단계 고정. 피격 1회 방어. 내리면 원래 속도로 돌아옵니다."},
  {id:"tank",kind:"ride",w:1,sw:6,color:"#9fae72",label:"탱크",desc:"탑승 중 물풍선이 캐릭터 최대치로. 피격 2회 방어."},
- {id:"turtle",kind:"ride",w:1,sw:6,color:"#6fbf7a",label:"복불복 거북이",desc:"먹는 순간 추첨: 느림 75% (속도 1) / 빠름 25% (속도 6). 드랍 모습은 동일. 피격 1회 방어, 연료 제한 없음."}
+ {id:"turtle",kind:"ride",w:1,sw:6,color:"#6fbf7a",label:"복불복 거북이",desc:"먹는 순간 추첨: 느림 75% (속도 1) / 빠름 25% (속도 5). 드랍 모습은 동일. 피격 1회 방어, 연료 제한 없음."}
 ];
 const ITEM_BY=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
 /* 스테이지는 혼자 하는 모험이라 생존 아이템(바늘·방패) 비중을 조금 높인다. */
 const STAGE_ITEM_W={bomb:26,power:24,roller:20,needle:11,shield:10,tele:3,owl:2};
 const RIDES={
- owl:{name:"부엉이",color:"#b895e3",hp:1,speed:6,bombMax:false},
+ owl:{name:"부엉이",color:"#b895e3",hp:1,speed:4,bombMax:false},
  tank:{name:"탱크",color:"#9fae72",hp:2,speed:null,bombMax:true},
  turtle:{name:"거북이",color:"#6fbf7a",hp:1,speed:null,bombMax:false}
 };
@@ -667,7 +667,7 @@ function setBoard(c,r){CFG.COLS=c;CFG.ROWS=r;document.getElementById("app")?.cla
 function boardCenter(){return [(CFG.COLS-1)>>1,(CFG.ROWS-1)>>1];}
 function playerNo(e){return Number(e.id.slice(1))+1;}
 function playerLabel(e){return "P"+playerNo(e)+(mine(e)?" · 나":e.human?" · 친구":"")+" "+e.name;}
-function rideName(e){return e.ride==="turtle"?(e.rideSpeed===9?"쾌속 거북이":"느림 거북이"):rideOf(e)?.name||"";}
+function rideName(e){return e.ride==="turtle"?(e.rideSpeed===5?"쾌속 거북이":"느림 거북이"):rideOf(e)?.name||"";}
 function standings(){return MATCH.players.map(p=>({...p,wins:MATCH.scores[p.id]||0})).sort((a,b)=>b.wins-a.wins||a.slot-b.slot);}
 
 /* 스테이지 몬스터. spd는 초당 칸 수(플레이어 기본 속도 1단계 = 3.05칸). 초반 몬스터는 플레이어보다 느리다.
@@ -836,7 +836,7 @@ function newRound(carry=null,title=null,sub=null){setBoard(...boardFor(MATCH.mod
  G={rid:++roundSeq,cols:CFG.COLS,rows:CFG.ROWS,mode,form,stage,round:MATCH.round,mapIdx:idx,intro:introMs,introMax:introMs,introTitle:title,introSub:sub,grid:buildGrid(idx,spawns,mode==="stage"?stageDensity(stage):null),deco:grid(()=>Math.random()<.24?1:0),theme:MAPS[idx],ents,me:ents[0],mobs:[],mobSeq:0,falls:[],wallFx:[],breakFx:[],parts:[],freeze:0,boss:null,shots:[],isBoss:mode==="stage"&&stageInfo(stage).boss,warns:[],eggs:[],respawnT:0,stallHint:false,spiral:spiralCells(),wallPending:null,zoneOrder:[],zoneIdx:0,zoneQueue:[],zoneDeferred:[],zoneNextAt:CFG.ZONE_START,zoneOn:false,zoneAlert:false,zoneSfx:0,zoneWalls:null,zoneMain:0,sudden:false,suddenIdle:0,suddenAlive:0,finishReason:null,idleT:0,stallT:0,stalled:false,hunt:false,bombs:[],blasts:[],items:[],floats:[],bag:[],skyBag:[],zones:new Array(6).fill(0),skyT:CFG.SKY_FIRST,skyGap:CFG.SKY_EVERY,t:0,roundMs:0,visualT:0,over:false,winner:null,winnerId:null,winnerIds:[],roundScored:false,endDelay:0,shake:0,dangerCache:{},reward:false};
  G.push={};G.bush={};if(mode!=="stage")decorateGrid(spawns);
  /* 드랍률: 블록 수와 인원에 맞춰 한 사람당 아이템이 7개쯤 나오게(0.34~0.55). 맵이 커지거나 인원이 늘어도 템이 모자라지 않게. */
- {const soft=G.grid.flat().filter(v=>v===2).length;G.dropRate=Math.max(.34,Math.min(.55,7*ents.length/Math.max(1,soft)));}
+ {const soft=G.grid.flat().filter(v=>v===2).length;G.dropRate=Math.max(.28,Math.min(.45,5.5*ents.length/Math.max(1,soft)));}
  buildZone();setTimeout(showTip,300);if(mode==="stage"){MATCH.stageCarry=carry?{...carry}:null;spawnStage(stage);}ffOn=false;enterPlayUI();}
 /* 게임 화면으로 전환. 온라인 참가자는 호스트가 보낸 라운드를 받을 때 이 함수만 호출한다. */
 function enterPlayUI(){phase="play";clearInputs();lockBackground(false);$("menu").classList.add("hide");$("room").classList.add("hide");$("result").classList.add("hide");$("overlay").classList.add("hide");$("hud").hidden=false;playChrome(true);$("app").inert=false;touchMode=sel.ctrl==="touch"||isPhone()||(sel.ctrl==="auto"&&isTouch());$("ctrl").hidden=!touchMode;$("keyHint").classList.toggle("on",!touchMode||splitKeys());$("keyHint").innerHTML=splitKeys()?KEYHINT_LOCAL:KEYHINT_ONE;last=performance.now();buildRoster();sizeCtrl();resize();updateHud();requestAnimationFrame(resize);if(document.activeElement instanceof HTMLElement)document.activeElement.blur();}
@@ -1004,7 +1004,7 @@ function zoneOf(x,y){return Math.min(1,Math.floor(y/(CFG.ROWS/2)))*3+Math.min(2,
 function addItem(x,y,id){if(!inb(x,y)||G.grid[y][x]!==0||G.items.some(it=>it.x===x&&it.y===y))return false;G.items.push({x,y,id,t:0});G.zones[zoneOf(x,y)]++;return true;}
 function dropItem(x,y){const z=zoneOf(x,y),avg=G.zones.reduce((a,b)=>a+b,0)/6,mult=Math.max(.3,Math.min(2.1,1+(avg-G.zones[z])*.5));if(Math.random()<(G.mode==="stage"?CFG.STAGE_DROP:G.dropRate??CFG.DROP)*mult)addItem(x,y,drawFromBag());}
 function itemUseful(e,id){switch(id){case"bomb":return e.maxBombs<capB(e);case"power":case"ultra":return e.power<capP(e);case"roller":case"devil":return e.speedLv<capS(e);case"needle":return e.needles<CFG.HOLD_MAX;case"shield":return e.shields<CFG.HOLD_MAX;case"tele":return e.teleports<CFG.HOLD_MAX;default:return true;}}
-function applyItem(e,id){if(id==="bomb")e.maxBombs=Math.min(capB(e),e.maxBombs+1);if(id==="power")e.power=Math.min(capP(e),e.power+1);if(id==="roller")e.speedLv=Math.min(capS(e),e.speedLv+1);if(id==="ultra")e.power=capP(e);if(id==="devil")e.speedLv=capS(e);if(id==="needle")e.needles=Math.min(3,e.needles+1);if(id==="shield")e.shields=Math.min(3,e.shields+1);if(id==="tele")e.teleports=Math.min(3,e.teleports+1);if(RIDES[id]){const r=RIDES[id];e.ride=id;e.rideHp=r.hp;e.rideSpeed=id==="turtle"?(Math.random()<CFG.TURTLE_FAST_CHANCE?9:1):r.speed;/* A slower mount changes every escape ETA immediately. */e.thinkT=0;}}
+function applyItem(e,id){if(id==="bomb")e.maxBombs=Math.min(capB(e),e.maxBombs+1);if(id==="power")e.power=Math.min(capP(e),e.power+1);if(id==="roller")e.speedLv=Math.min(capS(e),e.speedLv+1);if(id==="ultra")e.power=capP(e);if(id==="devil")e.speedLv=capS(e);if(id==="needle")e.needles=Math.min(3,e.needles+1);if(id==="shield")e.shields=Math.min(3,e.shields+1);if(id==="tele")e.teleports=Math.min(3,e.teleports+1);if(RIDES[id]){const r=RIDES[id];e.ride=id;e.rideHp=r.hp;e.rideSpeed=id==="turtle"?(Math.random()<CFG.TURTLE_FAST_CHANCE?5:1):r.speed;/* A slower mount changes every escape ETA immediately. */e.thinkT=0;}}
 function pickItems(ms){
  for(let i=G.items.length-1;i>=0;i--){const it=G.items[i];it.t+=ms;
   for(const e of G.ents){
@@ -1179,14 +1179,14 @@ function botSummary(e){return DIFF_NAMES[e.diff||sel.diff]||DIFF_NAMES.normal;}
 
 function statSum(e){return e.maxBombs+e.power+e.speedLv;}
 /* 파밍 필요도 0~1: 물풍선·물줄기·스피드가 각각 4에 못 미친 만큼. 약할수록 싸움보다 아이템을 챙긴다(크아 COM처럼 파밍 → 압박). */
-function farmNeed(e){return Math.min(1,(Math.max(0,4-e.maxBombs)+Math.max(0,4-e.power)+Math.max(0,7-e.speedLv)/2)/6);}
+function farmNeed(e){return Math.min(1,(Math.max(0,4-e.maxBombs)+Math.max(0,4-e.power)+Math.max(0,capS(e)-1-e.speedLv))/6);}
 function itemUtility(e,it){
  if(!itemUseful(e,it.id))return 0;
  switch(it.id){case"bomb":return 8+(capB(e)-e.maxBombs)*1.4;case"power":return 8+(capP(e)-e.power)*1.5;case"roller":return 10+(capS(e)-e.speedLv)*1.2;case"ultra":return 12+(capP(e)-e.power)*3;case"devil":return 14+(capS(e)-e.speedLv)*2.4;case"needle":return e.needles===0?24:10/(e.needles+1);case"shield":return e.shields===0?28:14/(e.shields+1);case"tele":return e.teleports===0?22:12/(e.teleports+1);default:{
   const r=RIDES[it.id];if(!r)return 0;
   // A blind turtle roll is not worth replacing a healthy mount or a fast build.
-  if(it.id==="turtle")return e.ride||e.speedLv>=7?0:13;
-  if(!e.ride)return it.id==="owl"?Math.max(12,30-e.speedLv*2):29;
+  if(it.id==="turtle")return e.ride||e.speedLv>=4?0:13;
+  if(!e.ride)return it.id==="owl"?Math.max(12,30-e.speedLv*4):29;
   if(e.ride==="turtle")return e.rideSpeed===1?36:it.id==="tank"?18:0;
   if(it.id===e.ride)return e.rideHp<r.hp?20:0;
   if(e.ride==="tank"&&e.rideHp>=2)return 0;
