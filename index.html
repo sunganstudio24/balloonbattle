@@ -1034,19 +1034,21 @@ function popMob(m){if(!m.alive)return;m.alive=false;m.trapped=false;G.idleT=0;MA
 function bombCovers(b,x,y){return blastCells(b).some(c=>c.x===x&&c.y===y);}
 
 let AI_VIEW=null;
-/* 의심 확률: 상대가 풀숲에 들어가는 걸 봤을 때 '물풍선 놨겠다'고 믿는 정도 */
-const SUSPECT={rookie:.1,easy:.3,normal:.55,hard:.85,master:1};
-/* 봇이 아는 물풍선 목록. 풀숲 속 상대 물풍선은 빼고, 의심 가는 풀숲엔 가상의 물풍선을 넣는다. 차이가 없으면 null(공용 지도 사용). */
+/* 조심 정도: 상대가 풀숲에 들어가는 걸 봤으면 '있을 수도 있다'며 그 근처를 덜 선호한다(피하는 건 아님). */
+const CAUTION={rookie:0,easy:1,normal:2,hard:3,master:3.5};
+/* 봇이 아는 물풍선 목록. 풀숲 속 상대 물풍선은 뺀다. 차이가 없으면 null(공용 지도 사용). */
 function botFog(v){
  if(!v||!G?.bush||G.mode==="stage")return null;
  const mates=o=>o&&(o.id===v.id||G.form!=="ffa"&&o.team===v.team);
  const hidden=G.bombs.filter(b=>G.bush[key(b.x,b.y)]&&!mates(G.ents.find(o=>o.id===b.owner)));
- const sus=[];for(const q of G.sus||[]){if(mates(G.ents.find(o=>o.id===q.id)))continue;
-  q.belief=q.belief||{};if(q.belief[v.id]===undefined)q.belief[v.id]=Math.random()<(SUSPECT[v.diff]??.55);
-  if(q.belief[v.id]&&!G.bombs.some(b=>b.x===q.x&&b.y===q.y&&!hidden.includes(b)))sus.push({x:q.x,y:q.y,t:G.t-q.t,power:q.power,owner:q.id,pass:new Set(),virtual:true});}
- if(!hidden.length&&!sus.length)return null;
- return G.bombs.filter(b=>!hidden.includes(b)).concat(sus);
+ if(!hidden.length)return null;
+ return G.bombs.filter(b=>!hidden.includes(b));
 }
+/* 이 칸이 '혹시 풀숲 물풍선 물줄기에 걸리나' 정도(0~1). 들어간 지 오래될수록 약해진다. */
+function cautionAt(v,x,y){let m=0;const mates=o=>o&&(o.id===v.id||G.form!=="ffa"&&o.team===v.team);
+ for(const q of G.sus||[]){if(mates(G.ents.find(o=>o.id===q.id)))continue;const age=(G.t-q.t)/(CFG.FUSE+CFG.BLAST);if(age>=1)continue;
+  const inLine=(q.x===x&&Math.abs(q.y-y)<=q.power)||(q.y===y&&Math.abs(q.x-x)<=q.power);if(inLine)m=Math.max(m,(1-age*.6)*(q.x===x&&q.y===y?1:.7));}
+ return m;}
 /* 누가 풀숲에 들어가는 순간을 기록(모두가 화면에서 볼 수 있는 정보) */
 function trackBushEntry(){if(!G.bush)return;G.sus=(G.sus||[]).filter(q=>G.t-q.t<CFG.FUSE+CFG.BLAST);
  for(const e of G.ents){if(!e.alive||e.trapped){e._inBush=false;continue;}const [x,y]=[Math.round(e.px),Math.round(e.py)],inB=!!G.bush[key(x,y)];
@@ -1578,6 +1580,7 @@ function choosePlan(e,h,c,ctx){
  }
  const fs=farmSpot(e,h,c,target);
  if(fs)cands.push({kind:"farm",p:fs,score:(early?5.5:statSum(e)<9?3.8:2.2)+fs.n*.8-eta(e,fs)*.45-back(fs)-late*2.5,until:6500});
+ const cw=CAUTION[e.diff]??2;if(cw&&G.sus?.length)for(const k of cands)if(k.p)k.score-=cw*cautionAt(e,k.p.x,k.p.y);
  let best=null;for(const k of cands)if(!best||k.score>best.score)best=k;
  if(best){e.plan={kind:best.kind,x:best.p.x,y:best.p.y,until:G.t+best.until,tid:best.tid,tx:best.tx,ty:best.ty};if(best.kind==="attack")e.lastAtk={x:best.p.x,y:best.p.y,tid:best.tid,t:G.t};setDir(e,best.p.dir);e.supportIntent=best.dig?"길 뚫기":PLAN_LABEL[best.kind];return;}
  // 상대가 블록 너머에 있으면 길을 뚫는다(쉬움 이상).
