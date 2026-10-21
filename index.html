@@ -1045,7 +1045,7 @@ function decorateGrid(spawns){
  let pm=0;for(const [x,y]of soft){if(pm>=np)break;if(G.grid[y][x]===2){G.push[key(x,y)]=1;pm++;}}
 }
 let lpCache=null,lpAt=-1;function localCached(){if(lpAt!==G.visualT||!lpCache){lpCache=localPlayers();lpAt=G.visualT;}return lpCache;}
-function hiddenInBush(e){if(!e||e.mob)return false;if(e.invisT>0&&!e.trapped){const loc=localCached();return !loc.includes(e)&&!loc.some(m=>G.form==="team"&&m.team===e.team);}if(!G?.bush||e.trapped)return false;const x=Math.round(e.px),y=Math.round(e.py);if(!inb(x,y)||!G.bush[key(x,y)])return false;return !localCached().includes(e);}
+function hiddenInBush(e){if(!e||e.mob)return false;if(e.invisT>0&&!e.trapped){const loc=localCached();if(loc.includes(e)||loc.some(m=>G.form==="team"&&m.team===e.team))return false;return !(e.invisT<1000&&buffBlink(e.invisT));}if(!G?.bush||e.trapped)return false;const x=Math.round(e.px),y=Math.round(e.py);if(!inb(x,y)||!G.bush[key(x,y)])return false;return !localCached().includes(e);}
 function tryPush(e,dir,dt){
  if(!G.push||e.mob||e.id==="boss"||NET.role==="guest")return;const [dx,dy]=DV[dir],cx=Math.round(e.px),cy=Math.round(e.py);
  const tx=cx+dx,ty=cy+dy,nx=tx+dx,ny=ty+dy,k=key(tx,ty);
@@ -2283,7 +2283,19 @@ function drawTurtleHead(e,x,y){
 
 function drawTeamRing(e){const cx=(e.px+.5)*ts,cy=(e.py+.79)*ts;ctx.save();ctx.strokeStyle="#152239";ctx.lineWidth=Math.max(4,ts*.13);ctx.beginPath();if(isEnemy(e,G.me)){ctx.moveTo(cx,cy-ts*.2);ctx.lineTo(cx+ts*.43,cy);ctx.lineTo(cx,cy+ts*.2);ctx.lineTo(cx-ts*.43,cy);ctx.closePath();}else ctx.ellipse(cx,cy,ts*.43,ts*.18,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle=teamColor(e);ctx.lineWidth=Math.max(2,ts*.07);ctx.stroke();ctx.restore();}
 function avatarBitmap(k,im,w,h){sprReset();const id="a"+k+"_"+Math.round(w*4);let c=SPR.get(id);if(c)return c;const d=sprDpr();c=offCanvas(w*d,h*d);c.getContext("2d").drawImage(im,0,0,c.width,c.height);SPR.set(id,c);return c;}
-function drawChar(e){if(e.invisT>0||G.bush&&!e.trapped&&G.bush[key(Math.round(e.px),Math.round(e.py))]){ctx.save();ctx.globalAlpha=.55;drawCharRaw(e);ctx.restore();return;}drawCharRaw(e);}
+function buffBlink(ms){if(ms>2000)return true;const per=Math.max(55,ms/9);return Math.floor(G.visualT/per)%2===0;}
+function drawChar(e){
+ if(e.invisT>0&&!e.trapped){const mine=localCached().includes(e);ctx.save();ctx.globalAlpha=mine?(buffBlink(e.invisT)?.5:.15):.22;drawCharRaw(e);ctx.restore();drawBuffs(e);return;}
+ if(G.bush&&!e.trapped&&G.bush[key(Math.round(e.px),Math.round(e.py))]){ctx.save();ctx.globalAlpha=.55;drawCharRaw(e);ctx.restore();drawBuffs(e);return;}
+ drawCharRaw(e);drawBuffs(e);}
+/* 머리 위 상태 표시: 남은 시간 고리 + 아이콘. 2초 남으면 빨갛게 바뀌고 깜빡임이 빨라진다. */
+const BUFFS=[["revT",8000,"#9b4dd6","⇄"],["invisT",6000,"#8fa3c4","👻"]];
+function drawBuffs(e){const list=BUFFS.filter(b=>e[b[0]]>0);if(!list.length)return;
+ const cx=(e.px+.5)*ts,r=ts*.22;
+ list.forEach((b,i)=>{const ms=e[b[0]],x=cx+ts*.6,top=(e.py+.5)*ts-ts*(e.ride?.72:.62)+i*r*2.3,end=ms<2000,on=buffBlink(ms);ctx.save();
+  ellipse(x,top,r*1.15,r*1.15,"#0b2550cc");ctx.strokeStyle=end?(on?"#ff4d5e":"#ffd84d"):b[2];ctx.lineWidth=Math.max(2,ts*.06);ctx.beginPath();ctx.arc(x,top,r,-Math.PI/2,-Math.PI/2+Math.PI*2*ms/b[1]);ctx.stroke();
+  ctx.globalAlpha=end&&!on?.35:1;ctx.fillStyle="#fff";ctx.font=`900 ${Math.round(r*1.1)}px system-ui,sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(b[3],x,top+1);ctx.restore();});
+ if(e.revT>0){const on=buffBlink(e.revT);ctx.save();ctx.globalAlpha=on?.55:.2;ctx.strokeStyle="#b56cff";ctx.lineWidth=Math.max(2,ts*.06);ctx.setLineDash([ts*.08,ts*.06]);ctx.lineDashOffset=-G.visualT/40;ctx.beginPath();ctx.ellipse(cx,(e.py+.5)*ts+ts*.34,ts*.36,ts*.12,0,0,Math.PI*2);ctx.stroke();ctx.restore();}}
 function drawCharRaw(e){
  const im=AVATAR_IMAGES[e.char+":"+e.dir+(e.ride?":ride":"")];
  if(!im?.complete||!im.naturalWidth){drawLegacyChar(e);return;}
@@ -2456,6 +2468,7 @@ function renderHud(){hudDirty=false;if(!G||!MATCH)return;const p=G.me,cap=bombCa
  let state=G.form==="team"?"● 우리 팀 / ◆ 상대 팀 · 아군 물줄기도 주의":G.mode==="stage"?(G.isBoss?"빨간 칸 = 곧 공격 · 공격을 마치고 멈춘 보스를 노리세요":"몬스터를 모두 물리치세요 · 갇힌 몬스터는 밟으면 처치"):"명단을 누르면 능력치·소지품을 확인합니다";
  if(ride)state=`${rideName(p)} · 방어 ${p.rideHp}/${ride.hp}회 · ${ride.bombMax?"물풍선 8개 적용":"속도 "+speedLevelOf(p)+"단계 고정"}`;
  if(G.intro>0)state="준비 중 · 곧 시작합니다";
+ {const bt=[];if(p.revT>0)bt.push("⇄ 방향 반대 "+(p.revT/1000).toFixed(1)+"초");if(p.invisT>0)bt.push("👻 유령 "+(p.invisT/1000).toFixed(1)+"초");if(bt.length)state=bt.join(" · ");}
  if(p.trapped)state=G.mode==="stage"?Math.max(0,p.trapT/1000).toFixed(1)+"초 · "+(p.needles?"바늘(아이템 키)을 눌러 탈출!":"목숨 1개를 잃어요"):Math.max(0,p.trapT/1000).toFixed(1)+"초 남음 · 적 접촉 시 즉시 탈락 · "+(p.needles?"바늘을 눌러 탈출!":(G.ents.some(e=>e!==p&&e.alive&&!isEnemy(e,p))?"아군의 구출을 기다리세요":"바늘이 없어 탈출할 수 없습니다"));
  if(!p.alive)state=G.mode==="stage"?(G.respawnT>0?"잠시 후 다시 출발 · 남은 목숨 "+MATCH.lives:"게임 오버"):!G.over&&G.form==="ffa"?"관전 중 · 마지막 생존자가 라운드 1승 획득":G.form==="team"&&!G.over?"관전 중 · 살아 있는 아군을 응원하세요":"탈락";
  if(G.over&&G.finishReason==="time"&&G.form!=="ffa")state="시간 종료 · "+(G.winner==="draw"?"교전 점수 동점 · 무승부":G.winner==="win"?"우리 팀 교전 점수 우세 · 승리":"상대 팀 교전 점수 우세");
