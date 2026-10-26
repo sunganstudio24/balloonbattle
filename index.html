@@ -981,20 +981,22 @@ function colorPickHTML(ch,cur,attr){return PALETTE.map((c,i)=>`<button type="but
 function slotKey(slot,seats=humanSeats()){return slot<seats.length?seats[slot].key:"bot"+slot;}
 /* 팀전 편 가르기. 직접 고른 값이 없으면 앞 절반 A팀, 뒤 절반 B팀. */
 function teamOf(slot,count,seats=humanSeats(),form=sel.form){const k=slotKey(slot,seats),v=sel.teamPick?.[k];if(validColor(v))return v;
- const mine=k==="h1"?MY_COLOR[1]:MY_COLOR[0];if(/^h[01]$/.test(k)&&form!=="team")return mine;
+ const mine=k==="h1"?MY_COLOR[1]:MY_COLOR[0];
+ if(form==="solo"){const a=validColor(sel.teamPick?.h0)?sel.teamPick.h0:MY_COLOR[0];return k.startsWith("bot")?(a+4)%PALETTE.length:a;}
+ if(/^h[01]$/.test(k)&&form!=="team")return mine;
  if(form==="team"){const a=validColor(sel.teamPick?.h0)?sel.teamPick.h0:MY_COLOR[0],b=(a+4)%PALETTE.length;return slot<Math.ceil(count/2)?a:b;}
  const used=new Set();for(let i=0;i<count;i++){if(i===slot)continue;const kk=slotKey(i,seats),vv=sel.teamPick?.[kk];if(validColor(vv))used.add(vv);else if(/^h[01]$/.test(kk))used.add(kk==="h1"?MY_COLOR[1]:MY_COLOR[0]);}
  const free=[...Array(PALETTE.length).keys()].filter(c=>!used.has(c));return free.length?free[slot%free.length]:slot%PALETTE.length;}
-function teamsValid(count,seats=humanSeats()){return new Set(Array.from({length:count},(_,i)=>teamOf(i,count,seats,"team"))).size>=2;}
+function teamsValid(count,seats=humanSeats(),form=sel.form){return new Set(Array.from({length:count},(_,i)=>teamOf(i,count,seats,form==="solo"?"solo":"team"))).size>=2;}
 function teamSizes(count,seats=humanSeats()){const m={};for(let i=0;i<count;i++){const t=teamOf(i,count,seats,"team");m[t]=(m[t]||0)+1;}return m;}
-function createMatchPlayers(count,humans=1,form=sel.form){const hiddenUsed=new Set();
+function createMatchPlayers(count,humans=1,form=sel.form){const hiddenUsed=new Set();const cf=sel.form==="solo"&&form==="team"?"solo":form;
  const seats=humanSeats();
  return Array.from({length:count},(_,slot)=>{
   const hs=slot<humans?seats[slot]:null,opt=botOption(slot),choice=hs?hs.char:opt.char;
   let char=validCharacter(choice)&&choice>=0&&!CHARS[choice]?.hidden?choice:Math.floor(Math.random()*8);
   if(!(validCharacter(choice)&&choice>=0)){for(const h of [8,9])if(!hiddenUsed.has(h)&&Math.random()<.015){char=h;hiddenUsed.add(h);break;}}
   // 슬롯마다 독립 추첨한다. 앞서 정해진 캐릭터·성향을 후보에서 빼지 않는다.
-  return {id:"e"+slot,slot,char,skin:hs?(hs.skin|0):(slot*3+1)%4,name:CHARS[char].name,human:!!hs,ctl:hs?hs.ctl:null,netId:hs?.netId||null,seat:hs?.seat||0,team:form==="team"?teamOf(slot,count,seats,form):null,color:teamOf(slot,count,seats,form),diff:hs?null:opt.diff,persona:hs?1:Math.floor(Math.random()*PERSONA.length)};
+  return {id:"e"+slot,slot,char,skin:hs?(hs.skin|0):(slot*3+1)%4,name:CHARS[char].name,human:!!hs,ctl:hs?hs.ctl:null,netId:hs?.netId||null,seat:hs?.seat||0,team:form==="team"?teamOf(slot,count,seats,cf):null,color:teamOf(slot,count,seats,cf),diff:hs?null:opt.diff,persona:hs?1:Math.floor(Math.random()*PERSONA.length)};
  });
 }
 function hasRoundLimit(){return !!MATCH&&MATCH.mode==="battle"&&MATCH.roundLimit>0;}
@@ -1009,8 +1011,10 @@ function startGame(){
  const mode=sel.mode,{form,humans,count}=matchShape();
  if(form==="team"&&!teamsValid(count)&&roomActive()){toMenu();$("roomStatus").innerHTML="팀이 하나뿐이에요. 카드 아래 색 버튼을 눌러 색(팀)을 2개 이상으로 나눠 주세요.";return;}
  if(form==="team"&&!teamsValid(count)){setText("lobbyControls","팀이 하나뿐이에요. 세부 설정 → 팀 배정에서 색을 2개 이상으로 나눠 주세요.");$("advancedSettings").open=true;renderBotSetup();return;}
- const players=createMatchPlayers(count,humans,form);
- MATCH={mode,form,players,humans,local2:mode==="battle"&&hostSeats()===2,online:mode==="battle"&&sel.play==="online"&&NET.role==="host",roundLimit:mode==="battle"&&sel.timeLimit!=="unlimited"?CFG.ROUND_LIMIT:0,scores:Object.fromEntries(players.map(p=>[p.id,0])),champion:null,champions:[],need:mode==="stage"?0:([1,2,3,5].includes(+sel.rounds)?+sel.rounds:3),teamWins:{},champTeam:null,round:1,scoreMe:0,scoreFoe:0,stage:1,lives:3,kills:0,bossKills:0,deaths:0,elapsed:0,maps:shuffle(MAPS.map((_,i)=>i))};
+ if(form==="solo"&&!teamsValid(count)){setText("lobbyControls","전원이 같은 색이라 팀이 하나뿐이에요. 색을 2개 이상으로 나눠 주세요.");if(roomActive()){toMenu();$("roomStatus").innerHTML="전원이 같은 색이에요. 색을 2개 이상으로 나눠 주세요.";}return;}
+ /* 사람 vs 봇도 같은 색 = 같은 팀 규칙으로 진행한다(기본은 사람 한 색, 봇 다른 한 색). */
+ const players=createMatchPlayers(count,humans,form==="solo"?"team":form);
+ MATCH={mode,form:form==="solo"?"team":form,players,humans,local2:mode==="battle"&&hostSeats()===2,online:mode==="battle"&&sel.play==="online"&&NET.role==="host",roundLimit:mode==="battle"&&sel.timeLimit!=="unlimited"?CFG.ROUND_LIMIT:0,scores:Object.fromEntries(players.map(p=>[p.id,0])),champion:null,champions:[],need:mode==="stage"?0:([1,2,3,5].includes(+sel.rounds)?+sel.rounds:3),teamWins:{},champTeam:null,round:1,scoreMe:0,scoreFoe:0,stage:1,lives:3,kills:0,bossKills:0,deaths:0,elapsed:0,maps:shuffle(MAPS.map((_,i)=>i))};
  scoreboardKey="";newRound();
 }
 
