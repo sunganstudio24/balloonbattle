@@ -452,7 +452,7 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
 
 .cp-skins{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid #0001;flex-wrap:wrap}
 .cp-skins>b{font-size:13px;white-space:nowrap}
-#cpSkins{display:flex;gap:8px;flex-wrap:wrap}
+#cpSkins,#cpColors{display:flex;gap:8px;flex-wrap:wrap}.cp-color small{display:flex;align-items:center;gap:3px}.cp-color small i{width:9px;height:9px;border-radius:50%;background:var(--cc)}.cp-color.on{border-color:var(--cc)!important;box-shadow:0 0 0 2px var(--cc)!important}
 .cp-skin{display:flex;flex-direction:column;align-items:center;gap:2px;width:68px;padding:6px 4px;border:2px solid #c4dced;border-radius:12px;background:#f3faff;cursor:pointer}
 .cp-skin svg{width:44px;height:44px}.cp-skin small{font-size:11px;font-weight:800;color:#33536b}
 .cp-skin.on{border-color:#2f8be0;background:#dff0ff;box-shadow:0 0 0 2px #2f8be055}
@@ -630,7 +630,7 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
       <div class="room-seat" id="roomSeatRow"><span>이 컴퓨터에서 할 사람</span><div class="rseg mini" id="roomSeats"><button type="button" data-v="1">1명</button><button type="button" data-v="2">2명 · 한 키보드</button></div></div>
       <div id="roomKeys"></div>
      </section>
-     <section class="rpanel r-palette"><div class="rp-head"><h3>캐릭터 선택</h3><button type="button" class="cp-open" data-open-cp="0">크게 보고 고르기</button><span class="rp-hint" id="palHint"></span><div class="rseg mini" id="palTarget" hidden><button type="button" data-v="0">1P 고르기</button><button type="button" data-v="1">2P 고르기</button></div></div><div class="rp-chars" id="palChars"></div><div class="rp-skins" id="palSkins"></div></section>
+     <section class="rpanel r-palette"><div class="rp-head"><h3>캐릭터 선택</h3><button type="button" class="cp-open" data-open-cp="0">크게 보고 고르기</button><span class="rp-hint" id="palHint"></span><div class="rseg mini" id="palTarget" hidden><button type="button" data-v="0">1P 고르기</button><button type="button" data-v="1">2P 고르기</button></div></div><div class="rp-chars" id="palChars"></div><div class="rp-skins" id="palSkins"></div><div class="rp-skins rp-colors" id="palColors"></div></section>
      <section class="rpanel room-chat" id="roomChat" hidden><h3>채팅 <small>대기실에서만</small></h3><div class="chat-log" id="chatLog" aria-live="polite"></div><form class="chat-row" id="chatForm" autocomplete="off"><input id="chatInput" maxlength="60" placeholder="메시지 입력 (Enter)" aria-label="채팅 메시지"><button type="submit" class="rbtn">보내기</button></form></section>
     </div>
     <div class="r-right">
@@ -648,7 +648,7 @@ html.phone #menu [class*="row"],html.phone #menu .seg,html.phone #menu .prefs{fl
   <footer class="sfoot room-foot"><button class="rbtn ghost" id="roomLeave">나가기</button><button class="go" id="roomGo"><span id="roomGoLabel">게임 시작</span></button></footer>
  </section>
  <section class="screen hide" id="result" aria-label="게임 결과"><div class="sbody resultcenter"><div class="result-sheet"><p class="result-eyebrow" id="resultEyebrow">BATTLE COMPLETE</p><div class="result-emblem" id="resultEmblem" aria-hidden="true"></div><div class="resultTitle" id="resultTitle"></div><p class="resultSub" id="resultSub"></p><div class="card" id="resultDetail" hidden></div><p class="result-message" id="resultMessage"></p></div></div><footer class="sfoot"><div class="rowbtn result-actions"><button class="primary" id="contBtn" hidden>이어하기</button><button class="primary" id="againBtn">한 판 더!</button><button id="backBtn">로비로</button></div></footer></section>
- <div id="charPick" class="cp" hidden role="dialog" aria-modal="true" aria-label="캐릭터 선택"><div class="cp-box"><header class="cp-head"><b id="cpTitle">캐릭터 선택</b><button type="button" class="cp-x" id="cpClose" aria-label="닫기">×</button></header><div class="cp-main"><div class="cp-grid" id="cpGrid"></div><div class="cp-info" id="cpInfo"></div></div><div class="cp-skins"><b>물풍선</b><div id="cpSkins"></div></div><footer class="cp-foot"><button type="button" class="cp-ok" id="cpOk">이 캐릭터로 결정</button></footer></div></div>
+ <div id="charPick" class="cp" hidden role="dialog" aria-modal="true" aria-label="캐릭터 선택"><div class="cp-box"><header class="cp-head"><b id="cpTitle">캐릭터 선택</b><button type="button" class="cp-x" id="cpClose" aria-label="닫기">×</button></header><div class="cp-main"><div class="cp-grid" id="cpGrid"></div><div class="cp-info" id="cpInfo"></div></div><div class="cp-skins"><b>색상</b><div id="cpColors"></div></div><div class="cp-skins"><b>물풍선</b><div id="cpSkins"></div></div><footer class="cp-foot"><button type="button" class="cp-ok" id="cpOk">이 캐릭터로 결정</button></footer></div></div>
  <section class="screen hide" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle"><div class="dialog-shell"><div class="sbody" id="overlayBody">
   <div class="dialog-head"><div class="dialog-symbol" id="overlaySymbol"><span class="ui-icon" data-ui="pause"></span></div><div><h2 id="overlayTitle" tabindex="-1">잠깐 쉬어가기</h2><p class="hint" id="overlayNote"></p></div></div>
   <div class="card vol-box" id="volBox" hidden><label><span>BGM</span><input type="range" id="volB" min="0" max="100"><b id="volBv"></b></label><label><span>효과음</span><input type="range" id="volS" min="0" max="100"><b id="volSv"></b></label><div class="pause-keys"><span><kbd>↑↓←→</kbd> 이동</span><span><kbd>Space</kbd> 물풍선</span><span><kbd>Ctrl</kbd> 아이템</span><span><kbd>Esc</kbd> 일시정지</span></div></div>
@@ -973,6 +973,11 @@ function matchShape(){
  return {form,humans,count};
 }
 function rememberColor(key,c){if(!validColor(c))return;if(key==="h0"){MY_COLOR[0]=c;try{localStorage.setItem("playerColor",c);}catch(e){}}else if(key==="h1"){MY_COLOR[1]=c;try{localStorage.setItem("playerColor2",c);}catch(e){}}}
+/* 색 하나를 바꿀 때 다른 칸 색이 따라 바뀌지 않도록, 지금 보이는 색을 먼저 고정해 둔다. */
+function freezeColors(){if(NET.role==="guest")return;const {count}=matchShape(),seats=humanSeats(),tp={...(sel.teamPick||{})};for(let i=0;i<count;i++){const k=slotKey(i,seats);if(!validColor(tp[k]))tp[k]=teamOf(i,count,seats);}sel.teamPick=tp;}
+function myColorOf(t){const v=sel.teamPick?.["h"+t];return validColor(v)?v:MY_COLOR[t];}
+function setMyColor(t,c){if(!validColor(c))return;if(NET.role==="guest"){rememberColor("h"+t,c);netSend({t:"team",s:t,team:c});return;}freezeColors();rememberColor("h"+t,c);sel.teamPick={...sel.teamPick,["h"+t]:c};saveSettings();if(NET.role==="host")netLobby();}
+function colorPickHTML(ch,cur,attr){return PALETTE.map((c,i)=>`<button type="button" class="cp-skin cp-color${cur===i?" on":""}" ${attr}="${i}" aria-pressed="${cur===i}" style="--cc:${c.c}">${avatarSVG(validCharacter(ch)&&ch>=0?ch:0,"down",true,false,false,i)}<small><i></i>${c.n}</small></button>`).join("");}
 function slotKey(slot,seats=humanSeats()){return slot<seats.length?seats[slot].key:"bot"+slot;}
 /* 팀전 편 가르기. 직접 고른 값이 없으면 앞 절반 A팀, 뒤 절반 B팀. */
 function teamOf(slot,count,seats=humanSeats(),form=sel.form){const k=slotKey(slot,seats),v=sel.teamPick?.[k];if(validColor(v))return v;
@@ -3054,7 +3059,7 @@ function renderRoom(){
  }
  $("roomSlots").innerHTML=cells.join("");$("roomSlots").classList.toggle("solo-stage",stage);
  setText("roomCount",stage?"혼자 도전":`${st.list.length}/${MAX_PLAYERS} · 사람 ${st.list.filter(p=>!p.isBot).length} · 봇 ${st.list.filter(p=>p.isBot).length}`);
- {const tg=roomSeatsHere()===2?ROOM.palTarget:0,cur=tg===1?mySkin2:mySkin;$("palSkins").innerHTML="<b>물풍선</b>"+SKINS.map((k,i)=>`<button type="button" class="cp-skin${cur===i?" on":""}" data-pskin="${i}" aria-pressed="${cur===i}">${skinSVG(i)}<small>${k.name}</small></button>`).join("");}const c1=sel.char,c2=sel.p2char;
+ {const tg=roomSeatsHere()===2?ROOM.palTarget:0,cur=tg===1?mySkin2:mySkin;$("palColors").innerHTML="<b>색상</b>"+colorPickHTML(tg===1?sel.p2char:sel.char,myColorOf(tg),"data-pcolor");$("palSkins").innerHTML="<b>물풍선</b>"+SKINS.map((k,i)=>`<button type="button" class="cp-skin${cur===i?" on":""}" data-pskin="${i}" aria-pressed="${cur===i}">${skinSVG(i)}<small>${k.name}</small></button>`).join("");}const c1=sel.char,c2=sel.p2char;
  $("palChars").innerHTML=[0,1,2,3,4,5,6,7,-1].map(i=>{const on1=c1===i,on2=two&&c2===i;return `<button type="button" class="pal${on1?" p1":""}${on2?" p2":""}" data-char="${i}" title="${i<0?"시작할 때 무작위로 정해져요":CHARS[i].tag}" aria-pressed="${on1||on2}"><span class="pal-face">${i<0?randomCharacterSVG():avatarSVG(i,"down",true)}</span><b>${i<0?"랜덤":CHARS[i].name}</b><small>${i<0?"무작위":CHARS[i].strong}</small>${on1?'<i class="pm pm1">1P</i>':""}${on2?'<i class="pm pm2">2P</i>':""}</button>`;}).join("");
  $("palTarget").hidden=!two;$("palTarget").querySelectorAll("button").forEach(b=>b.classList.toggle("on",Number(b.dataset.v)===ROOM.palTarget));
  setText("palHint",two?"왼쪽 클릭 1P · 오른쪽 클릭 2P":"눌러서 내 캐릭터 고르기");
@@ -3078,7 +3083,7 @@ function renderRoom(){
 function roomChanged(){saveSettings();syncMenu();if(NET.role==="host")netLobby();else renderRoom();SFX.ui();}
 function roomSet(k,v){if(!roomCanEdit())return;sel[k]=v;if(k==="form"&&v==="team")sel.bots=4-lobbyHumans();roomChanged();}
 function botSlotsCopy(){return Array.from({length:MAX_PLAYERS-1},(_,i)=>({...botOption(i+1)}));}
-function pickChar(which,v){if(!validCharacter(v))return;if(CP.skin!=null){if(which===1)mySkin2=CP.skin;else mySkin=CP.skin;saveSkins();}if(which===1)sel.p2char=v;else sel.char=v;saveSettings();syncMenu();if(NET.role==="guest"){netCfg();renderRoom();}else if(NET.role==="host")netLobby();else renderRoom();SFX.ui();}
+function pickChar(which,v){if(!validCharacter(v))return;if(!$("charPick").hidden&&validColor(CP.color))setMyColor(which,CP.color);if(CP.skin!=null){if(which===1)mySkin2=CP.skin;else mySkin=CP.skin;saveSkins();}if(which===1)sel.p2char=v;else sel.char=v;saveSettings();syncMenu();if(NET.role==="guest"){netCfg();renderRoom();}else if(NET.role==="host")netLobby();else renderRoom();SFX.ui();}
 function stepMap(d){if(!roomCanEdit())return;const i=Math.max(0,MAP_ORDER.indexOf(sel.map));sel.map=MAP_ORDER[(i+d+MAP_ORDER.length)%MAP_ORDER.length];roomChanged();}
 $("roomCopy").addEventListener("click",ev=>copyText(NET.code,ev.currentTarget));
 $("roomLink").addEventListener("click",ev=>copyText(inviteLink(),ev.currentTarget));
@@ -3117,9 +3122,9 @@ function cpInfoHTML(i){
 }
 function cpRender(){
  $("cpGrid").innerHTML=CP_ORDER.map(i=>`<button type="button" class="cp-card${i<0?" rand":""}${CP.sel===i?" on":""}" data-cp="${i}" aria-pressed="${CP.sel===i}">${i<0?randomCharacterSVG():avatarSVG(i,"down",true)}<b>${i<0?"랜덤":CHARS[i].name}</b><small>${i<0?"무작위":CHARS[i].strong}</small></button>`).join("");
- $("cpInfo").innerHTML=cpInfoHTML(CP.sel);$("cpSkins").innerHTML=SKINS.map((k,i)=>`<button type="button" class="cp-skin${CP.skin===i?" on":""}" data-skin="${i}" aria-pressed="${CP.skin===i}">${skinSVG(i)}<small>${k.name}</small></button>`).join("");setText("cpTitle",CP.target===1?"2P 캐릭터 선택":"캐릭터 선택");
+ $("cpInfo").innerHTML=cpInfoHTML(CP.sel);$("cpColors").innerHTML=colorPickHTML(CP.sel,CP.color,"data-ccolor");$("cpSkins").innerHTML=SKINS.map((k,i)=>`<button type="button" class="cp-skin${CP.skin===i?" on":""}" data-skin="${i}" aria-pressed="${CP.skin===i}">${skinSVG(i)}<small>${k.name}</small></button>`).join("");setText("cpTitle",CP.target===1?"2P 캐릭터 선택":"캐릭터 선택");
 }
-function openCharPick(target=0){CP.target=target;CP.skin=target===1?mySkin2:mySkin;CP.sel=target===1?sel.p2char:sel.char;if(!validCharacter(CP.sel))CP.sel=-1;cpRender();$("charPick").hidden=false;SFX.ui();setTimeout(()=>$("cpGrid").querySelector(".on")?.focus(),0);}
+function openCharPick(target=0){CP.target=target;CP.color=myColorOf(target);CP.skin=target===1?mySkin2:mySkin;CP.sel=target===1?sel.p2char:sel.char;if(!validCharacter(CP.sel))CP.sel=-1;cpRender();$("charPick").hidden=false;SFX.ui();setTimeout(()=>$("cpGrid").querySelector(".on")?.focus(),0);}
 function closeCharPick(){$("charPick").hidden=true;}
 $("cpGrid").addEventListener("click",ev=>{const b=ev.target.closest("[data-cp]");if(!b)return;CP.sel=Number(b.dataset.cp);cpRender();SFX.ui();$("cpGrid").querySelector(".on")?.focus();});
 $("cpGrid").addEventListener("dblclick",ev=>{const b=ev.target.closest("[data-cp]");if(!b)return;pickChar(CP.target,Number(b.dataset.cp));closeCharPick();});
@@ -3130,8 +3135,10 @@ document.addEventListener("keydown",ev=>{if($("charPick").hidden)return;if(ev.ke
  const k=CP_ORDER.indexOf(CP.sel),mv={ArrowLeft:-1,ArrowRight:1,ArrowUp:-3,ArrowDown:3}[ev.key];
  if(mv!=null){ev.preventDefault();ev.stopPropagation();const n=k+mv;if(n>=0&&n<9){CP.sel=CP_ORDER[n];cpRender();$("cpGrid").querySelector(".on")?.focus();}}
  else if(ev.key==="Enter"&&!ev.target.closest?.(".cp-x")){ev.preventDefault();pickChar(CP.target,CP.sel);closeCharPick();}},true);
+document.addEventListener("click",ev=>{const k=ev.target.closest("[data-ccolor]");if(!k)return;CP.color=+k.dataset.ccolor;cpRender();SFX.ui();});
 document.addEventListener("click",ev=>{const k=ev.target.closest("[data-skin]");if(!k)return;CP.skin=+k.dataset.skin;cpRender();SFX.ui();});
 document.addEventListener("click",ev=>{const b=ev.target.closest("[data-open-cp]");if(!b)return;ev.preventDefault();openCharPick(Number(b.dataset.openCp)||0);});
+$("palColors").addEventListener("click",ev=>{const b=ev.target.closest("[data-pcolor]");if(!b)return;setMyColor(roomSeatsHere()===2?ROOM.palTarget:0,+b.dataset.pcolor);syncMenu();renderRoom();SFX.ui();});
 $("palSkins").addEventListener("click",ev=>{const b=ev.target.closest("[data-pskin]");if(!b)return;const v=+b.dataset.pskin;if((roomSeatsHere()===2?ROOM.palTarget:0)===1)mySkin2=v;else mySkin=v;saveSkins();if(NET.role==="guest")netCfg();else if(NET.role==="host")netLobby();renderRoom();SFX.ui();});
 $("palChars").addEventListener("click",ev=>{const b=ev.target.closest("[data-char]");if(!b)return;pickChar(roomSeatsHere()===2?ROOM.palTarget:0,Number(b.dataset.char));});
 $("palChars").addEventListener("contextmenu",ev=>{const b=ev.target.closest("[data-char]");if(!b)return;ev.preventDefault();if(roomSeatsHere()===2)pickChar(1,Number(b.dataset.char));});
@@ -3142,7 +3149,7 @@ $("roomSlots").addEventListener("click",ev=>{
  if(edit&&t.dataset.rmBot){const slot=Number(t.dataset.rmBot),st=roomState(),arr=botSlotsCopy();if(slot<1||slot>MAX_PLAYERS-1)return;arr.splice(slot-1,1);arr.push({diff:"normal",char:-1});sel.botSlots=arr;sel.bots=Math.max(0,st.count-st.humans-1);roomChanged();return;}
  if(edit&&t.dataset.botDiff!=null){const slot=Number(t.dataset.botDiff),ids=Object.keys(AI_CFG),arr=botSlotsCopy(),o=arr[slot-1];if(!o)return;o.diff=ids[Math.max(0,Math.min(ids.length-1,ids.indexOf(o.diff)+Number(t.dataset.step)))];sel.botSlots=arr;roomChanged();return;}
  if(edit&&t.dataset.botChar!=null){const slot=Number(t.dataset.botChar),arr=botSlotsCopy(),o=arr[slot-1],order=[-1,0,1,2,3,4,5,6,7];if(!o)return;o.char=order[(order.indexOf(o.char)+1)%order.length];sel.botSlots=arr;roomChanged();return;}
- if(t.dataset.teamKey!=null){const next=(Number(t.dataset.team)+1)%PALETTE.length;rememberColor(t.dataset.teamKey,next);if(edit){sel.teamPick={...sel.teamPick,[t.dataset.teamKey]:next};roomChanged();}else{netSend({t:"team",s:Number(t.dataset.seat),team:next});SFX.ui();}}
+ if(t.dataset.teamKey!=null){const next=(Number(t.dataset.team)+1)%PALETTE.length;if(edit)freezeColors();rememberColor(t.dataset.teamKey,next);if(edit){sel.teamPick={...sel.teamPick,[t.dataset.teamKey]:next};roomChanged();}else{netSend({t:"team",s:Number(t.dataset.seat),team:next});SFX.ui();}}
 });
 /* ───────── 첫 화면(로비) ───────── */
 function renderLobbyArt(){
@@ -3240,7 +3247,7 @@ function renderBotSetup(){
  }
  $("botSetup").innerHTML='<p>봇의 난이도·캐릭터를 고르세요. 캐릭터는 중복 가능하고, 랜덤은 시작할 때 정해집니다.</p>'+(rows.join("")||'<p>봇 없이 사람끼리만 겨룹니다.</p>');
 }
-$("botSetup").addEventListener("click",ev=>{const b=ev.target.closest("[data-team-key]");if(!b)return;sel.teamPick={...sel.teamPick,[b.dataset.teamKey]:Number(b.dataset.team)};rememberColor(b.dataset.teamKey,Number(b.dataset.team));saveSettings();SFX.ui();if(NET.role==="host")netLobby();syncMenu();});
+$("botSetup").addEventListener("click",ev=>{const b=ev.target.closest("[data-team-key]");if(!b)return;freezeColors();sel.teamPick={...sel.teamPick,[b.dataset.teamKey]:Number(b.dataset.team)};rememberColor(b.dataset.teamKey,Number(b.dataset.team));saveSettings();SFX.ui();if(NET.role==="host")netLobby();syncMenu();});
 $("botSetup").addEventListener("change",ev=>{
  const el=ev.target,slot=Number(el.dataset.slot),kind=el.dataset.setting,value=el.value;
  if(kind==="p2char"){if(["-1","0","1","2","3"].includes(value)){sel.p2char=Number(value);saveSettings();SFX.ui();if(NET.role==="guest")netCfg();if(NET.role==="host")netLobby();}return;}
